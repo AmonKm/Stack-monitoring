@@ -1,0 +1,12 @@
+- targets:
+    - "dns01:9100"
+    - "mail01:9100"
+  labels:
+    env: "si-principal"
+    provisioned_by: "ansible"
+
+- targets:
+    - "host.docker.internal:9100"
+  labels:
+    env: "si-principal"
+    role: "monitoring-host"

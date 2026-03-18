@@ -1,0 +1,5 @@
+- targets:
+    - "honeypot:9100"
+  labels:
+    env: "dmz"
+    role: "honeypot"

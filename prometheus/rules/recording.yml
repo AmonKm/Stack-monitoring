@@ -1,0 +1,9 @@
+groups:
+  - name: recording
+    rules:
+
+      - record: instance:cpu_usage:rate5m
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+
+      - record: instance:memory_available:ratio
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100

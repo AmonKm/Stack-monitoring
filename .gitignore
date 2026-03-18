@@ -1,0 +1,8 @@
+# Données runtime — jamais dans Git
+prometheus_data/
+loki_data/
+grafana_data/
+*.env.local
+
+# Secrets
+secrets/

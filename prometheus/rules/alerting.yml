@@ -1,0 +1,60 @@
+groups:
+
+  - name: infrastructure
+    interval: 30s
+    rules:
+
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Machine {{ $labels.instance }} injoignable"
+          description: "{{ $labels.job }} sur {{ $labels.instance }} ne répond plus"
+
+      - alert: HighCPU
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU élevé sur {{ $labels.instance }}"
+          description: "CPU à {{ $value | printf \"%.1f\" }}%"
+
+      - alert: HighMemory
+        expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RAM critique sur {{ $labels.instance }}"
+
+      - alert: DiskAlmostFull
+        expr: (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes) * 100 < 15
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disque presque plein sur {{ $labels.instance }}"
+
+  - name: securite-honeypot
+    interval: 15s
+    rules:
+
+      - alert: HoneypotAttackSpike
+        expr: rate(node_netstat_Tcp_ActiveOpens{instance=~".*honeypot.*"}[2m]) > 50
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pic de connexions sur le honeypot"
+          description: "{{ $value | printf \"%.0f\" }} connexions/sec"
+
+      - alert: HoneypotHighLoad
+        expr: 100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle",role="honeypot"}[2m]))*100) > 70
+        for: 2m
+        labels:
+          severity: info
+        annotations:
+          summary: "Honeypot sous charge élevée"
