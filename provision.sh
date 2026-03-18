@@ -50,7 +50,11 @@ systemctl enable --now node_exporter
 
 echo "==> Copie des fichiers de configuration"
 mkdir -p /opt/monitoring
-cp -r /vagrant/* /opt/monitoring/
+
+# cp -r /vagrant/* ne copie pas les fichiers cachés (commence par .)
+# on utilise rsync ou cp avec le bon glob
+cp -r /vagrant/. /opt/monitoring/
+
 cd /opt/monitoring
 
 echo "==> Création du .env"
