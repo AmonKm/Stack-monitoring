@@ -47,6 +47,7 @@ systemctl daemon-reload
 systemctl enable --now node_exporter
 
 echo "==> Copie des fichiers de configuration"
+mkdir -p /opt/monitoring
 cp -r /vagrant/* /opt/monitoring/
 cd /opt/monitoring
 
@@ -63,7 +64,7 @@ docker compose up -d
 echo ""
 echo "=========================================="
 echo "  Stack monitoring opérationnelle"
-echo "  Grafana  : http://192.168.56.10:3000"
-echo "  Prometheus: http://192.168.56.10:9090"
-echo "  Loki     : http://192.168.56.10:3100"
+echo "  Grafana   : http://localhost:3000"
+echo "  Prometheus: http://localhost:9090"
+echo "  Loki      : http://localhost:3100"
 echo "=========================================="
