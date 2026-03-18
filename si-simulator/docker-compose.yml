@@ -1,5 +1,6 @@
 services:
 
+  # ── DNS (bind9) ────────────────────────────────────────────
   dns01:
     image: ubuntu/bind9:latest
     container_name: dns01
@@ -21,6 +22,16 @@ services:
       - "--path.sysfs=/host/sys"
       - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
 
+  # bind_exporter — métriques DNS spécifiques
+  dns01-bind-exporter:
+    image: prometheuscommunity/bind-exporter:v0.7.0
+    container_name: dns01-bind-exporter
+    restart: unless-stopped
+    network_mode: "service:dns01"
+    command:
+      - "--bind.stats-url=http://localhost:8053/"
+
+  # ── Mail (postfix) ─────────────────────────────────────────
   mail01:
     image: boky/postfix:latest
     container_name: mail01
@@ -44,6 +55,19 @@ services:
       - "--path.sysfs=/host/sys"
       - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
 
+  # postfix_exporter — métriques mail spécifiques
+  mail01-postfix-exporter:
+    image: prometheuscommunity/postfix-exporter:v0.4.0
+    container_name: mail01-postfix-exporter
+    restart: unless-stopped
+    network_mode: "service:mail01"
+    volumes:
+      - /var/log:/var/log:ro
+    command:
+      - "--postfix.showq_path=/var/spool/postfix/public/showq"
+      - "--postfix.logfile_path=/var/log/mail.log"
+
+  # ── Honeypot ───────────────────────────────────────────────
   honeypot:
     image: prom/node-exporter:v1.8.1
     container_name: honeypot

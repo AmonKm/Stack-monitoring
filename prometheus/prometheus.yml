@@ -33,14 +33,15 @@ scrape_configs:
         refresh_interval: 15s
     scrape_interval: 5s
 
-  - job_name: "dns"
-    static_configs:
-      - targets: ["dns01:9119"]
-        labels:
-          role: "dns"
-
-  - job_name: "mail"
-    static_configs:
-      - targets: ["mail01:9154"]
-        labels:
-          role: "mail"
+  # Jobs commentés — activer quand le groupe 1 a de vrais serveurs
+  # - job_name: "dns"
+  #   static_configs:
+  #     - targets: ["dns01:9119"]
+  #       labels:
+  #         role: "dns"
+  #
+  # - job_name: "mail"
+  #   static_configs:
+  #     - targets: ["mail01:9154"]
+  #       labels:
+  #         role: "mail"
