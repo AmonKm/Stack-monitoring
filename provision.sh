@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+export DEBIAN_FRONTEND=noninteractive
+
 echo "==> Mise à jour système"
 apt-get update -qq
 
@@ -9,7 +11,7 @@ apt-get install -y -qq ca-certificates curl gnupg git
 
 echo "==> Ajout dépôt Docker officiel"
 install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg
 chmod a+r /etc/apt/keyrings/docker.gpg
 
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
