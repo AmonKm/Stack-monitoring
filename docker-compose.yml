@@ -125,6 +125,9 @@ services:
       - /var/log:/var/log:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - promtail_positions:/tmp
+      - /var/log/journal:/var/log/journal:ro
+      - /run/log/journal:/run/log/journal:ro
+      - /etc/machine-id:/etc/machine-id:ro
     command: -config.file=/etc/promtail/promtail-config.yml
     depends_on:
       loki:
