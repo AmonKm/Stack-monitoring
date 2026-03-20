@@ -1,0 +1,57 @@
+---
+- name: Créer user node_exporter
+  user:
+    name: node_exporter
+    shell: /sbin/nologin
+    system: yes
+
+- name: Télécharger node_exporter
+  get_url:
+    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    dest: /tmp/node_exporter.tar.gz
+
+- name: Extraire node_exporter
+  unarchive:
+    src: /tmp/node_exporter.tar.gz
+    dest: /usr/local/bin
+    remote_src: yes
+    extra_opts: ["--strip-components=1"]
+    include: ["node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"]
+
+- name: Service systemd node_exporter
+  copy:
+    dest: /etc/systemd/system/node_exporter.service
+    content: |
+      [Unit]
+      Description=Node Exporter
+      After=network.target
+
+      [Service]
+      User=node_exporter
+      ExecStart=/usr/local/bin/node_exporter
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Démarrer node_exporter
+  systemd:
+    name: node_exporter
+    enabled: yes
+    state: started
+    daemon_reload: yes
+
+- name: Configurer rsyslog — envoi vers Promtail
+  copy:
+    dest: /etc/rsyslog.d/99-monitoring.conf
+    content: |
+      # Envoie tous les logs vers Promtail (stack monitoring)
+      *.* @{{ monitoring_ip }}:{{ promtail_syslog_port }}
+  notify: Restart rsyslog
+
+- name: Ouvrir port 9100 vers monitoring uniquement
+  ufw:
+    rule: allow
+    port: "9100"
+    proto: tcp
+    src: "{{ monitoring_ip }}"

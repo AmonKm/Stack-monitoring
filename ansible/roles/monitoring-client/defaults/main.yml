@@ -1,0 +1,8 @@
+# IP de la VM monitoring — à adapter selon le réseau
+monitoring_ip: "192.168.56.10"
+prometheus_port: 9090
+loki_port: 3100
+promtail_syslog_port: 514
+
+# Version node_exporter
+node_exporter_version: "1.8.1"
