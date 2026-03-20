@@ -12,6 +12,34 @@ groups:
         annotations:
           summary: "Machine {{ $labels.instance }} injoignable"
           description: "{{ $labels.job }} sur {{ $labels.instance }} ne répond plus"
+  - name: firewall
+    rules:
+
+      - alert: FirewallHighBlockRate
+        expr: rate(pf_packets_blocked[5m]) > 1000
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Taux de blocage élevé sur le firewall"
+          description: "{{ $value | printf \"%.0f\" }} paquets/sec bloqués"
+
+      - alert: FirewallGatewayDown
+        expr: gateway_status == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Passerelle WAN pfSense hors ligne"
+
+      - alert: FirewallHighConnections
+        expr: pf_states_total > 50000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Nombre de connexions firewall élevé"
+          description: "{{ $value }} connexions actives"
 
       - alert: HighCPU
         expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85

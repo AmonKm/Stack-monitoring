@@ -14,6 +14,21 @@ clients:
 
 scrape_configs:
 
+  - job_name: "pfsense-syslog"
+    syslog:
+      listen_address: "0.0.0.0:514"
+      labels:
+        job: "pfsense"
+        type: "firewall"
+    pipeline_stages:
+      - regex:
+          expression: '.*filterlog.*(?P<action>block|pass).*(?P<proto>tcp|udp|icmp).*,(?P<src_ip>\d+\.\d+\.\d+\.\d+),(?P<dst_ip>\d+\.\d+\.\d+\.\d+),(?P<dst_port>\d+)'
+      - labels:
+          action:
+          proto:
+          src_ip:
+          dst_port:
+
   - job_name: "varlogs"
     static_configs:
       - targets: ["localhost"]

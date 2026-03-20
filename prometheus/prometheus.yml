@@ -15,6 +15,18 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
+  - job_name: "firewall"
+    file_sd_configs:
+      - files:
+          - "/etc/prometheus/targets/firewall.yml"
+        refresh_interval: 30s
+    scrape_interval: 10s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: "([^:]+):.*"
+        replacement: "$1"
+
   - job_name: "node-exporter"
     file_sd_configs:
       - files:
