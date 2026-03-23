@@ -26,10 +26,10 @@ echo "==> Ajout vagrant au groupe docker"
 usermod -aG docker vagrant
 
 echo "==> Installation node_exporter"
-wget -q https://github.com/prometheus/node_exporter/releases/download/v1.8.1/node_exporter-1.8.1.linux-amd64.tar.gz
-tar xzf node_exporter-1.8.1.linux-amd64.tar.gz
-mv node_exporter-1.8.1.linux-amd64/node_exporter /usr/local/bin/
-rm -rf node_exporter-1.8.1.linux-amd64*
+wget -q https://github.com/prometheus/node_exporter/releases/download/v1.10.2/node_exporter-1.10.2.linux-amd64.tar.gz
+tar xzf node_exporter-1.10.2.linux-amd64.tar.gz
+mv node_exporter-1.10.2.linux-amd64/node_exporter /usr/local/bin/
+rm -rf node_exporter-1.10.2.linux-amd64*
 
 cat > /etc/systemd/system/node_exporter.service << 'SERVICE'
 [Unit]

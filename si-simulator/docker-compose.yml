@@ -9,7 +9,7 @@ services:
       - monitoring_default
 
   dns01-node-exporter:
-    image: prom/node-exporter:v1.8.1
+    image: prom/node-exporter:v1.10.2
     container_name: dns01-node-exporter
     restart: unless-stopped
     pid: "service:dns01"
@@ -42,7 +42,7 @@ services:
       - monitoring_default
 
   mail01-node-exporter:
-    image: prom/node-exporter:v1.8.1
+    image: prom/node-exporter:v1.10.2
     container_name: mail01-node-exporter
     restart: unless-stopped
     pid: "service:mail01"
@@ -69,7 +69,7 @@ services:
 
   # ── Honeypot ───────────────────────────────────────────────
   honeypot:
-    image: prom/node-exporter:v1.8.1
+    image: prom/node-exporter:v1.10.2
     container_name: honeypot
     restart: unless-stopped
     volumes:

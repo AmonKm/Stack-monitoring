@@ -1,4 +1,4 @@
 # IP de la VM monitoring sur le réseau du SI en 10.0.0.0/24
 monitoring_ip: "10.0.0.50"        # à confirmer avec JB
-node_exporter_version: "1.8.1"
+node_exporter_version: "1.10.2"
 promtail_syslog_port: 514
