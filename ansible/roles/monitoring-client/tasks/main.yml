@@ -16,7 +16,8 @@
     dest: /usr/local/bin
     remote_src: yes
     extra_opts: ["--strip-components=1"]
-    include: ["node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"]
+    include:
+      - "node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
 
 - name: Service systemd node_exporter
   copy:
@@ -33,6 +34,7 @@
 
       [Install]
       WantedBy=multi-user.target
+  notify: Restart node_exporter
 
 - name: Démarrer node_exporter
   systemd:
@@ -41,17 +43,17 @@
     state: started
     daemon_reload: yes
 
-- name: Configurer rsyslog — envoi vers Promtail
+- name: Configurer rsyslog vers Promtail
   copy:
     dest: /etc/rsyslog.d/99-monitoring.conf
     content: |
-      # Envoie tous les logs vers Promtail (stack monitoring)
-      *.* @{{ monitoring_ip }}:{{ promtail_syslog_port }}
+      *.* @{{ monitoring_ip }}:514
   notify: Restart rsyslog
 
-- name: Ouvrir port 9100 vers monitoring uniquement
+- name: Ouvrir port 9100 vers monitoring
   ufw:
     rule: allow
     port: "9100"
     proto: tcp
     src: "{{ monitoring_ip }}"
+  ignore_errors: yes    # si ufw pas installé on continue

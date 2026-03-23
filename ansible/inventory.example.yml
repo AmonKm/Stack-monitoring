@@ -1,7 +1,7 @@
 all:
   children:
 
-    # Machines du SI principal (groupe 1)
+    # Machines du SI principal (groupe 6.1 JB)
     si:
       hosts:
         dns01:

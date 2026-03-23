@@ -1,6 +1,9 @@
 - targets:
-    - "dns01:9100"
-    - "mail01:9100"
+    - "10.0.0.10:9100"    # dns-01
+    - "10.0.0.11:9100"    # dhcp-01
+    - "10.0.0.20:9100"    # web-01
+    - "10.0.0.21:9100"    # mail-01
   labels:
     env: "si-principal"
     provisioned_by: "ansible"
+
