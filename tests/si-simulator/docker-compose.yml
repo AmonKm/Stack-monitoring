@@ -1,73 +1,31 @@
 services:
 
-  # ── DNS (bind9) ────────────────────────────────────────────
   dns01:
-    image: ubuntu/bind9:latest
+    image: prom/node-exporter:v1.10.2
     container_name: dns01
     restart: unless-stopped
-    networks:
-      - monitoring_default
-
-  dns01-node-exporter:
-    image: prom/node-exporter:v1.10.2
-    container_name: dns01-node-exporter
-    restart: unless-stopped
-    pid: "service:dns01"
-    network_mode: "service:dns01"
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
     command:
       - "--path.procfs=/host/proc"
       - "--path.sysfs=/host/sys"
-      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    networks:
+      - monitoring_stack
 
-  # bind_exporter — métriques DNS spécifiques
-  dns01-bind-exporter:
-    image: prometheuscommunity/bind-exporter:v0.7.0
-    container_name: dns01-bind-exporter
-    restart: unless-stopped
-    network_mode: "service:dns01"
-    command:
-      - "--bind.stats-url=http://localhost:8053/"
-
-  # ── Mail (postfix) ─────────────────────────────────────────
   mail01:
-    image: boky/postfix:latest
+    image: prom/node-exporter:v1.10.2
     container_name: mail01
     restart: unless-stopped
-    environment:
-      - ALLOWED_SENDER_DOMAINS=projet.local
-    networks:
-      - monitoring_default
-
-  mail01-node-exporter:
-    image: prom/node-exporter:v1.10.2
-    container_name: mail01-node-exporter
-    restart: unless-stopped
-    pid: "service:mail01"
-    network_mode: "service:mail01"
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
     command:
       - "--path.procfs=/host/proc"
       - "--path.sysfs=/host/sys"
-      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    networks:
+      - monitoring_stack
 
-  # postfix_exporter — métriques mail spécifiques
-  mail01-postfix-exporter:
-    image: prometheuscommunity/postfix-exporter:v0.4.0
-    container_name: mail01-postfix-exporter
-    restart: unless-stopped
-    network_mode: "service:mail01"
-    volumes:
-      - /var/log:/var/log:ro
-    command:
-      - "--postfix.showq_path=/var/spool/postfix/public/showq"
-      - "--postfix.logfile_path=/var/log/mail.log"
-
-  # ── Honeypot ───────────────────────────────────────────────
   honeypot:
     image: prom/node-exporter:v1.10.2
     container_name: honeypot
@@ -79,8 +37,8 @@ services:
       - "--path.procfs=/host/proc"
       - "--path.sysfs=/host/sys"
     networks:
-      - monitoring_default
+      - monitoring_stack
 
 networks:
-  monitoring_default:
+  monitoring_stack:
     external: true

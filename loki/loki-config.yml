@@ -15,7 +15,7 @@ schema_config:
   configs:
     - from: 2024-01-01
       store: tsdb
-      object_store: s3
+      object_store: filesystem
       schema: v13
       index:
         prefix: index_
@@ -25,18 +25,13 @@ storage_config:
   tsdb_shipper:
     active_index_directory: /loki/index
     cache_location: /loki/cache
-  aws:
-    s3: http://minioadmin:minioadmin123@minio:9000/loki
-    s3forcepathstyle: true
-    region: us-east-1
+  filesystem:
+    directory: /loki/chunks
 
 limits_config:
   retention_period: 720h
   ingestion_rate_mb: 16
   ingestion_burst_size_mb: 32
-  max_streams_per_user: 10000
-  max_query_length: 721h
-  max_entries_limit_per_query: 50000
   reject_old_samples: true
   reject_old_samples_max_age: 168h
 
@@ -45,4 +40,4 @@ compactor:
   retention_enabled: true
   retention_delete_delay: 2h
   compaction_interval: 10m
-  delete_request_store: s3
+  delete_request_store: filesystem

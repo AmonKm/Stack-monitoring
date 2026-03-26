@@ -1,8 +1,8 @@
 services:
 
-  # ─────────────────────────────────────────
+  
   # POSTGRESQL — persistance Grafana
-  # ─────────────────────────────────────────
+  
   postgres:
     image: postgres:16-alpine
     container_name: postgres
@@ -20,10 +20,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  # ─────────────────────────────────────────
+  
   # MINIO — stockage S3 pour Loki
-  # ─────────────────────────────────────────
+  
   minio:
     image: minio/minio:latest
     container_name: minio
@@ -34,6 +33,7 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_REGION: us-east-1
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
@@ -62,9 +62,9 @@ services:
       echo 'Buckets créés';
       "
 
-  # ─────────────────────────────────────────
+  
   # PROMETHEUS
-  # ─────────────────────────────────────────
+  
   prometheus:
     image: prom/prometheus:v2.53.0
     container_name: prometheus
@@ -87,9 +87,9 @@ services:
     networks:
       - monitoring
 
-  # ─────────────────────────────────────────
+  
   # LOKI — stockage dans MinIO
-  # ─────────────────────────────────────────
+  
   loki:
     image: grafana/loki:3.1.0
     container_name: loki
@@ -111,9 +111,9 @@ services:
       timeout: 5s
       retries: 5
 
-  # ─────────────────────────────────────────
+  
   # PROMTAIL
-  # ─────────────────────────────────────────
+  
   promtail:
     image: grafana/promtail:3.1.0
     container_name: promtail
@@ -135,9 +135,9 @@ services:
     networks:
       - monitoring
 
-  # ─────────────────────────────────────────
+  
   # GRAFANA — backend PostgreSQL
-  # ─────────────────────────────────────────
+  
   grafana:
     image: grafana/grafana:11.1.0
     container_name: grafana
@@ -160,6 +160,7 @@ services:
       - GF_FEATURE_TOGGLES_ENABLE=correlations
       - GF_UNIFIED_ALERTING_ENABLED=true
       - GF_LOG_LEVEL=warn
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/dashboards/systeme.json
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
@@ -171,6 +172,21 @@ services:
         condition: service_started
       loki:
         condition: service_healthy
+    networks:
+      - monitoring
+  
+  # BLACKBOX EXPORTER — sondes disponibilité
+  
+  blackbox:
+    image: prom/blackbox-exporter:v0.25.0
+    container_name: blackbox
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9115:9115"
+    volumes:
+      - ./blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    command:
+      - "--config.file=/etc/blackbox_exporter/config.yml"
     networks:
       - monitoring
 

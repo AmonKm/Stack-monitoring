@@ -57,3 +57,83 @@ scrape_configs:
   #     - targets: ["mail01:9154"]
   #       labels:
   #         role: "mail"
+
+  # ── Blackbox — sondes HTTP ────────────────────────────────
+  - job_name: "blackbox-http"
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - "http://web-01"           # serveur web groupe 1
+          - "http://10.0.0.20"        # IP directe
+          - "https://google.com"      # test externe
+        labels:
+          type: "http"
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
+
+  # ── Blackbox — sondes TCP ports ───────────────────────────
+  - job_name: "blackbox-tcp"
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    static_configs:
+      - targets:
+          - "10.0.0.20:80"    # web HTTP
+          - "10.0.0.20:443"   # web HTTPS
+          - "10.0.0.21:25"    # mail SMTP
+          - "10.0.0.21:143"   # mail IMAP
+          - "10.0.0.10:53"    # DNS TCP
+        labels:
+          type: "tcp"
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
+
+  # ── Blackbox — sondes DNS ─────────────────────────────────
+  - job_name: "blackbox-dns"
+    metrics_path: /probe
+    params:
+      module: [dns_udp]
+    static_configs:
+      - targets:
+          - "10.0.0.10:53"    # serveur DNS groupe 1
+        labels:
+          type: "dns"
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
+
+  # ── Blackbox — sondes ICMP (ping) ─────────────────────────
+  - job_name: "blackbox-icmp"
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    static_configs:
+      - targets:
+          - "10.0.0.10"    # dns-01
+          - "10.0.0.20"    # web-01
+          - "10.0.0.21"    # mail-01
+        labels:
+          type: "icmp"
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115

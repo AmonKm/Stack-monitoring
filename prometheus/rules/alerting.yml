@@ -86,3 +86,34 @@ groups:
           severity: info
         annotations:
           summary: "Honeypot sous charge élevée"
+
+  - name: disponibilite
+    interval: 30s
+    rules:
+
+      - alert: ServiceDown
+        expr: probe_success == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.instance }} inaccessible"
+          description: "La sonde {{ $labels.job }} échoue sur {{ $labels.instance }}"
+
+      - alert: SlowResponse
+        expr: probe_duration_seconds > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Réponse lente sur {{ $labels.instance }}"
+          description: "Temps de réponse : {{ $value | printf \"%.2f\" }}s"
+
+      - alert: SSLCertExpiringSoon
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 30
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Certificat SSL expire bientôt sur {{ $labels.instance }}"
+          description: "Expire dans {{ $value | humanizeDuration }}"
