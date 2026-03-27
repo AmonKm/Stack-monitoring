@@ -55,11 +55,5 @@ scrape_configs:
       use_rfc5424_message: false
       labels:
         job: "syslog"
-    pipeline_stages:
-      - regex:
-          expression: '(?P<host>\S+)\s+(?P<program>\S+):'
-      - labels:
-          host:
-          program:
 
 
