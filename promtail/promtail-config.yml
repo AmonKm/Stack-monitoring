@@ -52,12 +52,18 @@ scrape_configs:
       listen_address: "0.0.0.0:514"
       listen_protocol: udp
       idle_timeout: 60s
+      use_incoming_timestamp: true
       labels:
         job: "syslog"
-    relabel_configs:
-      - source_labels: ['__syslog_hostname__']
-        target_label: 'host'
-      - source_labels: ['__syslog_appname__']
-        target_label: 'program'
+    pipeline_stages:
+      - match:
+          selector: '{job="syslog"}'
+          stages:
+            - regex:
+                expression: '^(?P<host>\S+)\s+(?P<program>\w+)'
+                source: message
+            - labels:
+                host:
+                program:
 
 
