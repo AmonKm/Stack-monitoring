@@ -48,7 +48,21 @@ scrape_configs:
           eventid:
           src_ip:
           protocol:
-
+# -------------
+  - job_name: "syslog"
+    syslog:
+      listen_address: "0.0.0.0:514"
+      listen_protocol: udp
+      idle_timeout: 60s
+      use_rfc5424_message: false
+      labels:
+        job: "syslog"
+    pipeline_stages:
+      - regex:
+          expression: '(?P<host>\S+)\s+(?P<program>\S+):'
+      - labels:
+          host:
+          program:
   # ── pfSense syslog UDP ─────────────────────────────────────
   - job_name: "pfsense-syslog"
     syslog:
@@ -67,3 +81,4 @@ scrape_configs:
           proto:
           src_ip:
           dst_port:
+
