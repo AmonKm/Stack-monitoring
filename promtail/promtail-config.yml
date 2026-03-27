@@ -22,11 +22,9 @@ scrape_configs:
         job: "journald"
         host: "monitoring"
     pipeline_stages:
-      - regex:
-          expression: '.*sshd.*(?P<action>Failed|Accepted|Invalid) (?:password|user).* from (?P<src_ip>\d+\.\d+\.\d+\.\d+)'
       - labels:
-          action:
-          src_ip:
+          host: __syslog_hostname__
+          program: __syslog_appname__
 
   # ── Cowrie JSON ────────────────────────────────────────────
   - job_name: "honeypot-cowrie"
