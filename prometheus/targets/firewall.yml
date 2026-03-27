@@ -1,5 +1,5 @@
 - targets:
-    - "172.21.0.200:9100"  # fw-01 pfSense
+    - "10.0.0.254:9100"
   labels:
     env: "si-principal"
     role: "firewall"
