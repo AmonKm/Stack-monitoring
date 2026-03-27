@@ -56,10 +56,9 @@ scrape_configs:
       listen_protocol: udp
       idle_timeout: 60s
       label_structured_data: yes
-      use_rfc5424_message: true
       labels:
-        job: "pfsense"
-        type: "firewall"
+        job: "syslog"
+        type: "infra"
     pipeline_stages:
       - regex:
           expression: '.*filterlog.*(?P<action>block|pass).*(?P<proto>tcp|udp|icmp).*,(?P<src_ip>\d+\.\d+\.\d+\.\d+),(?P<dst_ip>\d+\.\d+\.\d+\.\d+),(?P<dst_port>\d+)'
