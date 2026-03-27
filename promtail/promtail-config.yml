@@ -63,22 +63,5 @@ scrape_configs:
       - labels:
           host:
           program:
-  # ── pfSense syslog UDP ─────────────────────────────────────
-  - job_name: "pfsense-syslog"
-    syslog:
-      listen_address: "0.0.0.0:514"
-      listen_protocol: udp
-      idle_timeout: 60s
-      label_structured_data: yes
-      labels:
-        job: "syslog"
-        type: "infra"
-    pipeline_stages:
-      - regex:
-          expression: '.*filterlog.*(?P<action>block|pass).*(?P<proto>tcp|udp|icmp).*,(?P<src_ip>\d+\.\d+\.\d+\.\d+),(?P<dst_ip>\d+\.\d+\.\d+\.\d+),(?P<dst_port>\d+)'
-      - labels:
-          action:
-          proto:
-          src_ip:
-          dst_port:
+
 
