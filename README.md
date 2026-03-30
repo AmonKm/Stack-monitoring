@@ -1,73 +1,78 @@
 # Stack Monitoring — Groupe 6.2
 
-Stack de supervision basé sur **Prometheus + Loki + Grafana**, déployé sur une VM dédiée.  
-Compatible avec toute infrastructure Linux disposant de `node_exporter` et `rsyslog`.
+Stack de supervision **Prometheus + Loki + Grafana** déployable sur n'importe quelle infrastructure Linux.  
+Un `git clone` + 3 commandes suffisent pour avoir un monitoring complet opérationnel.
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Infrastructure (Groupe 6.1)              │
-│                                                              │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
-│  │ pfsense  │  │   Mail   │  │   DNS    │  │   Web    │   │
-│  │ :514/udp │  │ :514/udp │  │ :514/udp │  │ :514/udp │   │
-│  │ node_exp │  │ node_exp │  │ node_exp │  │ node_exp │   │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘   │
-└───────┼─────────────┼─────────────┼──────────────┼─────────┘
-        │  syslog UDP 514            │              │
-        └────────────────────────────┘──────────────┘
-                        │
-        ┌───────────────▼──────────────────────────┐
-        │            VM Monitoring                  │
-        │                                          │
-        │  rsyslog :514  →  /var/log/syslog-remote/│
-        │                                          │
-        │  ┌──────────┐  ┌──────────┐              │
-        │  │ Promtail │  │  Prom.   │              │
-        │  │ lit logs │  │scrape    │              │
-        │  └────┬─────┘  │node_exp  │              │
-        │       │        └────┬─────┘              │
-        │  ┌────▼─────────────▼─────┐              │
-        │  │         Loki           │              │
-        │  │    (stockage logs)     │              │
-        │  └────────────┬───────────┘              │
-        │  ┌────────────▼───────────┐              │
-        │  │        Grafana         │              │
-        │  │   dashboards :3000     │              │
-        │  └────────────────────────┘              │
-        └──────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                        Infrastructure cible                      │
+│                                                                  │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
+│  │ pfsense  │  │   Mail   │  │   DNS    │  │   Web    │       │
+│  │ syslog   │  │ syslog   │  │ syslog   │  │ syslog   │       │
+│  │ node_exp │  │ node_exp │  │ node_exp │  │ node_exp │       │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
+└───────┼─────────────┼─────────────┼──────────────┼─────────────┘
+        │         syslog UDP 514    │              │
+        └───────────────────────────┴──────────────┘
+                            │
+            ┌───────────────▼──────────────────────┐
+            │           VM Monitoring               │
+            │                                      │
+            │  ┌─────────┐                         │
+            │  │ rsyslog │ ← UDP 514               │
+            │  │  :514   │ → /var/log/syslog-remote/│
+            │  └────┬────┘                         │
+            │       │                              │
+            │  ┌────▼──────┐   ┌────────────────┐  │
+            │  │ Promtail  │   │   Prometheus   │  │
+            │  │ lit logs  │   │ scrape :9100   │  │
+            │  └────┬──────┘   └───────┬────────┘  │
+            │       │                  │           │
+            │  ┌────▼──────────────────▼────────┐  │
+            │  │              Loki              │  │
+            │  │        stockage logs           │  │
+            │  └────────────────┬───────────────┘  │
+            │  ┌────────────────▼───────────────┐  │
+            │  │            Grafana             │  │
+            │  │       dashboards :3000         │  │
+            │  └────────────────────────────────┘  │
+            └──────────────────────────────────────┘
 ```
 
-### Composants
+## Composants
 
 | Composant | Rôle | Port |
 |-----------|------|------|
-| **Prometheus** | Collecte les métriques (CPU, RAM, réseau, disque) via `node_exporter` | 9090 (local) |
+| **Prometheus** | Collecte métriques CPU/RAM/disque/réseau via `node_exporter` | 9090 (local) |
 | **Loki** | Stockage et indexation des logs | 3100 (local) |
-| **Promtail** | Lit les fichiers de logs et les envoie à Loki | — |
-| **Grafana** | Visualisation dashboards et alertes | 3000 |
-| **rsyslog** | Reçoit les logs syslog UDP/514 et les écrit sur disque | 514 |
+| **Promtail** | Lit les fichiers de logs → pousse vers Loki | interne |
+| **Grafana** | Dashboards et alertes | 3000 |
+| **rsyslog** | Reçoit logs syslog UDP/514 → écrit sur disque | 514 |
 
 ---
 
 ## Prérequis
 
 ### VM Monitoring
-- Debian/Ubuntu
-- Docker + Docker Compose
-- rsyslog (`sudo apt install -y rsyslog`)
-- 2 Go RAM minimum, 20 Go disque
+- OS : Debian 12 / Ubuntu 22.04+
+- RAM : 2 Go minimum
+- Disque : 20 Go minimum
+- Docker + Docker Compose installés
+- rsyslog installé (`sudo apt install -y rsyslog`)
+- `node_exporter` installé (`sudo apt install -y prometheus-node-exporter`)
 
-### VMs supervisées (groupe 6.1)
-- `node_exporter` installé sur chaque VM (voir `ansible/`)
-- Syslog configuré pour envoyer vers l'IP de la VM monitoring sur le port 514 UDP
+### VMs à superviser
+- `node_exporter` installé et accessible sur le port `9100`
+- Syslog configuré pour envoyer vers la VM monitoring sur le port `514` UDP
 
 ---
 
-## Installation
+## Installation rapide
 
 ### 1. Cloner le dépôt
 
@@ -80,122 +85,192 @@ cd Stack-monitoring
 
 ```bash
 cp .env.example .env
-nano .env   # adapter GF_ADMIN_PASSWORD
+nano .env
 ```
+
+| Variable | Description | Défaut |
+|----------|-------------|--------|
+| `GF_ADMIN_USER` | Login Grafana | `admin` |
+| `GF_ADMIN_PASSWORD` | Mot de passe Grafana | `changeme` |
+| `PROMETHEUS_RETENTION` | Durée rétention métriques | `30d` |
 
 ### 3. Configurer rsyslog
 
-Installer et configurer rsyslog pour recevoir les logs distants :
-
 ```bash
-# Installer rsyslog
-sudo apt install -y rsyslog
-
-# Créer les dossiers de logs
 sudo mkdir -p /var/log/syslog-remote
 sudo chmod 755 /var/log/syslog-remote
-
-# Copier la config rsyslog
-sudo cp docs/rsyslog.conf /etc/rsyslog.d/10-remote.conf
-
-# Redémarrer rsyslog
+sudo cp docs/rsyslog.conf /etc/rsyslog.d/00-promtail-relay.conf
 sudo systemctl restart rsyslog
 sudo systemctl enable rsyslog
 ```
 
-> **Adapter** le fichier `docs/rsyslog.conf` si le hostname de votre pfsense est différent de `pfSense.home.arpa`.
+Vérifier que rsyslog tourne sans erreur :
+
+```bash
+sudo journalctl -u rsyslog --since "1 minute ago" | tail -5
+```
 
 ### 4. Adapter les targets Prometheus
 
-Créer un fichier par VM dans `prometheus/targets/` :
+Éditer `prometheus/targets/si.yml` avec les IPs de vos VMs :
 
-```bash
-# Exemple : prometheus/targets/hosts.yml
-cat > prometheus/targets/hosts.yml << EOF
+```yaml
 - targets:
-    - "10.0.0.10:9100"   # web
-    - "10.0.0.11:9100"   # mail
-    - "10.0.0.12:9100"   # dns
-    - "10.0.0.13:9100"   # monitoring
+    - "10.0.0.10:9100"   # ← remplacer par l'IP réelle
   labels:
-    job: node
-EOF
+    env: "si-principal"
+    role: "dns"           # ← rôle de la VM
+
+- targets:
+    - "10.0.0.11:9100"
+  labels:
+    env: "si-principal"
+    role: "dhcp"
+
+- targets:
+    - "10.0.0.20:9100"
+  labels:
+    env: "si-principal"
+    role: "web"
+
+- targets:
+    - "10.0.0.21:9100"
+  labels:
+    env: "si-principal"
+    role: "mail"
 ```
 
-### 5. Lancer le stack
+Éditer `prometheus/targets/firewall.yml` :
+
+```yaml
+- targets:
+    - "10.0.0.254:9100"   # ← IP de votre firewall
+  labels:
+    env: "si-principal"
+    role: "firewall"
+    type: "pfsense"
+```
+
+Éditer `prometheus/prometheus.yml` — remplacer l'IP de la VM monitoring :
+
+```yaml
+- job_name: "monitoring"
+  static_configs:
+    - targets: ["10.0.0.13:9100"]   # ← IP de votre VM monitoring
+      labels:
+        role: "monitoring"
+```
+
+### 5. Adapter Promtail
+
+Éditer `promtail/promtail-config.yml` — adapter les `__path__` selon les hostnames réels de votre infra.
+
+> **Comment trouver les bons hostnames ?**
+> Après avoir démarré rsyslog et configuré les VMs pour envoyer leurs logs :
+> ```bash
+> ls /var/log/syslog-remote/
+> ```
+> Les dossiers créés correspondent aux hostnames réels. Utiliser ces valeurs dans la config Promtail.
+
+Exemple :
+
+```yaml
+- job_name: "pfsense-firewall"
+  static_configs:
+    - targets: ["localhost"]
+      labels:
+        job: "pfsense"
+        host: "pfsense"
+        type: "firewall"
+        __path__: /var/log/syslog-remote/pfSense.home.arpa/filterlog.log
+        #                                ^^^^^^^^^^^^^^^^^^
+        #                    remplacer par le hostname réel de votre pfsense
+```
+
+### 6. Lancer le stack
 
 ```bash
 docker compose up -d
-```
-
-Vérifier que tout tourne :
-
-```bash
 docker compose ps
 ```
 
-### 6. Accéder à Grafana
-
-Ouvrir `http://<IP_VM_MONITORING>:3000`  
-Login : `admin` / mot de passe défini dans `.env`
+Accéder à Grafana : `http://<IP_VM_MONITORING>:3000`
 
 ---
 
 ## Intégration pfsense
 
-Dans l'interface web pfsense :  
+Dans l'interface web pfsense :
 **Status → System Logs → Settings**
 
 | Paramètre | Valeur |
 |-----------|--------|
 | Enable Remote Logging | ✅ coché |
 | Remote log servers | `<IP_VM_MONITORING>:514` |
-| Remote Syslog Contents | Firewall Events + System Events |
-| Log message format | RFC 5424 |
+| Remote Syslog Contents | ✅ Firewall Events + System Events |
+| Log message format | syslog (RFC 5424) |
+
+> **Important** : pour que les logs firewall (`filterlog`) apparaissent, au moins une règle firewall doit avoir l'option **Log** activée dans **Firewall → Rules**.
 
 ---
 
-## Intégration VMs Linux (mail, web, dns)
+## Intégration VMs Linux
 
-Sur chaque VM à superviser, ajouter dans `/etc/rsyslog.conf` ou `/etc/rsyslog.d/forward.conf` :
+Sur chaque VM à superviser :
+
+**1. Installer node_exporter :**
+
+```bash
+sudo apt install -y prometheus-node-exporter
+sudo systemctl enable --now prometheus-node-exporter
+# Vérifier
+curl http://localhost:9100/metrics | head -3
+```
+
+**2. Configurer l'envoi syslog :**
+
+Créer `/etc/rsyslog.d/forward.conf` :
 
 ```
-*.* @<IP_VM_MONITORING>:514    # UDP
-# ou
-*.* @@<IP_VM_MONITORING>:514   # TCP
+*.* @<IP_VM_MONITORING>:514
 ```
-
-Puis :
 
 ```bash
 sudo systemctl restart rsyslog
 ```
 
----
-
-## Intégration node_exporter (métriques)
-
-Déployer `node_exporter` via Ansible (voir `ansible/`) ou manuellement :
+**3. Vérifier sur la VM monitoring :**
 
 ```bash
-# Sur chaque VM supervisée
-sudo apt install -y prometheus-node-exporter
-sudo systemctl enable --now prometheus-node-exporter
+ls /var/log/syslog-remote/
+# Le hostname de la VM doit apparaître comme dossier
 ```
 
-Puis ajouter l'IP dans `prometheus/targets/hosts.yml`.
+---
+
+## Dashboards disponibles
+
+| Dashboard | Source | Contenu |
+|-----------|--------|---------|
+| **pfsense Firewall** | Loki | Trafic bloqué/autorisé, top IPs, top ports |
+| **DHCP & Mail** | Loki | Baux DHCP, machines actives, logs mail |
+| **Système** | Prometheus | CPU, RAM, disque, réseau, uptime par VM |
+| **Cybersécurité** | Loki | Ports suspects, DNS, machines réseau |
+
+Les dashboards sont chargés automatiquement au démarrage de Grafana depuis `grafana/dashboards/`.
 
 ---
 
 ## Variables à adapter selon l'infra
 
-| Fichier | Variable | Description |
-|---------|----------|-------------|
-| `.env` | `GF_ADMIN_PASSWORD` | Mot de passe Grafana |
-| `.env` | `PROMETHEUS_RETENTION` | Durée de rétention métriques (défaut: 30d) |
-| `docs/rsyslog.conf` | `pfSense.home.arpa` | Hostname de votre pfsense |
-| `prometheus/targets/hosts.yml` | IPs | IPs des VMs avec node_exporter |
-| `promtail/promtail-config.yml` | `__path__` | Chemins des fichiers de logs |
+| Fichier | Ce qu'il faut changer |
+|---------|----------------------|
+| `.env` | `GF_ADMIN_PASSWORD`, `PROMETHEUS_RETENTION` |
+| `prometheus/targets/si.yml` | IPs et rôles des VMs |
+| `prometheus/targets/firewall.yml` | IP du firewall |
+| `prometheus/prometheus.yml` | IP de la VM monitoring |
+| `promtail/promtail-config.yml` | Hostnames des dossiers dans `/var/log/syslog-remote/` |
+| `docs/rsyslog.conf` | Hostname du pfsense si différent de `pfSense.home.arpa` |
 
 ---
 
@@ -203,38 +278,88 @@ Puis ajouter l'IP dans `prometheus/targets/hosts.yml`.
 
 ```
 Stack-monitoring/
-├── docker-compose.yml          # Stack principal
-├── .env.example                # Variables à copier en .env
+├── docker-compose.yml              # Stack principal
+├── .env.example                    # Variables → copier en .env
 ├── prometheus/
-│   ├── prometheus.yml          # Config Prometheus
-│   ├── targets/                # Fichiers de targets (hosts.yml)
-│   └── rules/                  # Règles d'alerting
+│   ├── prometheus.yml              # Config Prometheus
+│   ├── targets/
+│   │   ├── si.yml                  # IPs des VMs à scraper
+│   │   └── firewall.yml            # IP du firewall
+│   └── rules/                      # Règles d'alerting (optionnel)
 ├── loki/
-│   └── loki-config.yml         # Config Loki (filesystem)
+│   └── loki-config.yml             # Config Loki (stockage filesystem)
 ├── promtail/
-│   └── promtail-config.yml     # Config Promtail (sources de logs)
+│   └── promtail-config.yml         # Sources de logs à collecter
 ├── grafana/
-│   ├── provisioning/           # Datasources et dashboards auto
-│   └── dashboards/             # Fichiers JSON des dashboards
-├── ansible/                    # Playbooks pour node_exporter
+│   ├── provisioning/
+│   │   ├── datasources/            # Datasources auto (Prometheus + Loki)
+│   │   └── dashboards/             # Config chargement dashboards
+│   └── dashboards/                 # JSON des dashboards Grafana
+│       ├── pfsense-firewall.json
+│       ├── dhcp-mail.json
+│       ├── systeme.json
+│       └── cyber.json
+├── ansible/                        # Playbooks node_exporter
 └── docs/
-    └── rsyslog.conf            # Config rsyslog à copier sur la VM
+    └── rsyslog.conf                # Config rsyslog → copier sur la VM
 ```
 
 ---
 
 ## Dépannage
 
-**Grafana inaccessible** → vérifier `docker compose ps` et les logs `docker logs grafana`
+**Grafana inaccessible**
 
-**Pas de métriques** → vérifier que `node_exporter` tourne sur les VMs (`curl http://<IP>:9100/metrics`)
+```bash
+docker compose ps
+docker logs grafana --tail=20
+```
 
-**Pas de logs pfsense** → vérifier que rsyslog reçoit (`sudo tcpdump -i any udp port 514 -n`) et que les fichiers se créent dans `/var/log/syslog-remote/pfsense/`
+**Pas de métriques dans Prometheus**
 
-**Loki erreur `empty ring`** → normal au démarrage, disparaît après ~30s
+```bash
+# Vérifier que node_exporter répond sur la VM cible
+curl http://<IP_VM>:9100/metrics | head -3
+# Vérifier l'état des targets Prometheus
+curl http://localhost:9090/api/v1/targets | python3 -m json.tool | grep health
+```
+
+**Pas de logs dans Loki**
+
+```bash
+# Vérifier que les paquets arrivent sur le port 514
+sudo tcpdump -i any udp port 514 -n -c 10
+# Vérifier les dossiers créés par rsyslog
+ls /var/log/syslog-remote/
+# Vérifier les labels disponibles dans Loki
+curl http://localhost:3100/loki/api/v1/labels | python3 -m json.tool
+```
+
+**Logs pfsense présents mais filterlog vide**
+→ Dans pfsense, vérifier que "Firewall Events" est coché dans **Status → System Logs → Settings** et qu'au moins une règle firewall a l'option **Log** activée.
+
+**Loki erreur `empty ring` au démarrage**
+→ Normal pendant ~30 secondes au démarrage, disparaît tout seul.
+
+**Dossiers `/var/log/syslog-remote/` vides**
+→ Vérifier que le port 514 UDP est libre :
+
+```bash
+sudo ss -ulnp | grep 514
+```
+
+→ Vérifier rsyslog :
+
+```bash
+sudo systemctl status rsyslog
+sudo journalctl -u rsyslog --since "5 minutes ago"
+```
 
 ---
 
 ## Auteurs
 
-Groupe 6.2 — Projet supervision infrastructure
+Groupe 6.2 — Projet supervision infrastructure  
+Stack compatible avec toute infrastructure Linux disposant de `node_exporter` et `rsyslog`.
+
+Projet réalisé de manière autonome. Claude (Anthropic) utilisé comme support technique ponctuel pour la vérification de configurations et l'explication de certains fonctionnements.
