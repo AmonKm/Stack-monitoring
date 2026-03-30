@@ -57,10 +57,13 @@ scrape_configs:
         job: "syslog"
     pipeline_stages:
 
-      # Extraction hostname + program pour tous
-      - regex:
-          expression: '^(?P<host>\S+)\s+(?P<program>\S+)'
-          source: message
+      # Extraction host + program depuis les champs syslog natifs
+      - template:
+          source: host
+          template: '{{ .Value "__syslog_message_hostname" }}'
+      - template:
+          source: program
+          template: '{{ .Value "__syslog_message_app_name" }}'
       - labels:
           host:
           program:
