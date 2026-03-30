@@ -14,7 +14,7 @@ clients:
 
 scrape_configs:
 
-  # ── Journald (systemd) ─────────────────────────────────────
+  # ── Journald (systemd) ────────────────────────────────────
   - job_name: "journald"
     journal:
       max_age: 12h
@@ -23,10 +23,9 @@ scrape_configs:
         host: "monitoring"
     pipeline_stages:
       - labels:
-          host: __syslog_hostname__
-          program: __syslog_appname__
+          unit: __journal__systemd_unit__
 
-  # ── Cowrie JSON ────────────────────────────────────────────
+  # ── Cowrie JSON (Honeypot) ────────────────────────────────
   - job_name: "honeypot-cowrie"
     static_configs:
       - targets: ["localhost"]
@@ -46,7 +45,8 @@ scrape_configs:
           eventid:
           src_ip:
           protocol:
-# -------------
+
+  # ── Syslog UDP 514 (pfsense + autres) ────────────────────
   - job_name: "syslog"
     syslog:
       listen_address: "0.0.0.0:514"
@@ -56,14 +56,35 @@ scrape_configs:
       labels:
         job: "syslog"
     pipeline_stages:
+
+      # Extraction hostname + program pour tous
+      - regex:
+          expression: '^(?P<host>\S+)\s+(?P<program>\S+)'
+          source: message
+      - labels:
+          host:
+          program:
+
+      # ── pfsense filterlog ─────────────────────────────────
       - match:
-          selector: '{job="syslog"}'
+          selector: '{program="filterlog"}'
           stages:
             - regex:
-                expression: '^(?P<host>\S+)\s+(?P<program>\w+)'
+                expression: '\d+,\S*,\S*,\S*,(?P<interface>\w+),(?P<reason>\w+),(?P<action>block|pass),(?P<direction>in|out),(?P<ip_ver>\d+)(?:,[^,]*){7},(?P<src_ip>[\d.a-f:]+),(?P<dst_ip>[\d.a-f:]+),(?P<src_port>\d+),(?P<dst_port>\d+)'
                 source: message
+            - labels:
+                interface:
+                action:
+                direction:
+                src_ip:
+                dst_ip:
+                src_port:
+                dst_port:
+
+      # ── pfsense autres (dhcp, openvpn, etc.) ─────────────
+      - match:
+          selector: '{host="pfSense.home.arpa"}'
+          stages:
             - labels:
                 host:
                 program:
-
-
