@@ -1,9 +1,7 @@
 groups:
-
   - name: infrastructure
     interval: 30s
     rules:
-
       - alert: InstanceDown
         expr: up == 0
         for: 1m
@@ -12,37 +10,9 @@ groups:
         annotations:
           summary: "Machine {{ $labels.instance }} injoignable"
           description: "{{ $labels.job }} sur {{ $labels.instance }} ne répond plus"
-  - name: firewall
-    rules:
-
-      - alert: FirewallHighBlockRate
-        expr: rate(pf_packets_blocked[5m]) > 1000
-        for: 2m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Taux de blocage élevé sur le firewall"
-          description: "{{ $value | printf \"%.0f\" }} paquets/sec bloqués"
-
-      - alert: FirewallGatewayDown
-        expr: gateway_status == 0
-        for: 1m
-        labels:
-          severity: critical
-        annotations:
-          summary: "Passerelle WAN pfSense hors ligne"
-
-      - alert: FirewallHighConnections
-        expr: pf_states_total > 50000
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Nombre de connexions firewall élevé"
-          description: "{{ $value }} connexions actives"
 
       - alert: HighCPU
-        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        expr: instance:cpu_usage:rate5m > 85
         for: 5m
         labels:
           severity: warning
@@ -51,69 +21,40 @@ groups:
           description: "CPU à {{ $value | printf \"%.1f\" }}%"
 
       - alert: HighMemory
-        expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 10
+        expr: instance:memory_available:ratio < 10
         for: 5m
         labels:
           severity: critical
         annotations:
           summary: "RAM critique sur {{ $labels.instance }}"
+          description: "Mémoire disponible : {{ $value | printf \"%.1f\" }}%"
 
       - alert: DiskAlmostFull
-        expr: (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes) * 100 < 15
+        expr: (node_filesystem_avail_bytes{fstype!="tmpfs",mountpoint="/"} / node_filesystem_size_bytes{fstype!="tmpfs",mountpoint="/"}) * 100 < 15
         for: 10m
         labels:
           severity: warning
         annotations:
           summary: "Disque presque plein sur {{ $labels.instance }}"
+          description: "Espace restant : {{ $value | printf \"%.1f\" }}%"
 
-  - name: securite-honeypot
-    interval: 15s
-    rules:
-
-      - alert: HoneypotAttackSpike
-        expr: rate(node_netstat_Tcp_ActiveOpens{instance=~".*honeypot.*"}[2m]) > 50
-        for: 30s
-        labels:
-          severity: warning
-        annotations:
-          summary: "Pic de connexions sur le honeypot"
-          description: "{{ $value | printf \"%.0f\" }} connexions/sec"
-
-      - alert: HoneypotHighLoad
-        expr: 100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle",role="honeypot"}[2m]))*100) > 70
-        for: 2m
-        labels:
-          severity: info
-        annotations:
-          summary: "Honeypot sous charge élevée"
-
-  - name: disponibilite
+  - name: firewall
     interval: 30s
     rules:
-
-      - alert: ServiceDown
-        expr: probe_success == 0
-        for: 1m
-        labels:
-          severity: critical
-        annotations:
-          summary: "Service {{ $labels.instance }} inaccessible"
-          description: "La sonde {{ $labels.job }} échoue sur {{ $labels.instance }}"
-
-      - alert: SlowResponse
-        expr: probe_duration_seconds > 2
+      - alert: HighCPU_Firewall
+        expr: instance:cpu_usage:rate5m{role="firewall"} > 80
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "Réponse lente sur {{ $labels.instance }}"
-          description: "Temps de réponse : {{ $value | printf \"%.2f\" }}s"
+          summary: "CPU élevé sur pfsense"
+          description: "CPU firewall à {{ $value | printf \"%.1f\" }}%"
 
-      - alert: SSLCertExpiringSoon
-        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 30
-        for: 1h
+      - alert: FirewallDown
+        expr: up{role="firewall"} == 0
+        for: 1m
         labels:
-          severity: warning
+          severity: critical
         annotations:
-          summary: "Certificat SSL expire bientôt sur {{ $labels.instance }}"
-          description: "Expire dans {{ $value | humanizeDuration }}"
+          summary: "Firewall pfsense injoignable"
+          description: "node_exporter pfsense ne répond plus"
