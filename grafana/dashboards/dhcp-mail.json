@@ -1,0 +1,277 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "📦 Baux DHCP (24h)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "sum(count_over_time({job=\"dhcp\", type=\"DHCPACK\"}[24h]))",
+        "legendFormat": "baux",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "green" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "📡 DHCP Offers (24h)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "sum(count_over_time({job=\"dhcp\", type=\"DHCPOFFER\"}[24h]))",
+        "legendFormat": "offers",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "orange" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "orange", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "🔄 DHCP Requests (24h)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "sum(count_over_time({job=\"dhcp\", type=\"DHCPREQUEST\"}[24h]))",
+        "legendFormat": "requests",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "red" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "DHCP NAK (24h)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "sum(count_over_time({job=\"dhcp\", type=\"DHCPNAK\"}[24h]))",
+        "legendFormat": "nak",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "showPoints": "never" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+      "id": 5,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi" }
+      },
+      "title": "Timeline DHCP — activité réseau",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${loki_uid}" },
+          "expr": "sum(rate({job=\"dhcp\", type=\"DHCPACK\"}[$__interval]))",
+          "legendFormat": "ACK",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "${loki_uid}" },
+          "expr": "sum(rate({job=\"dhcp\", type=\"DHCPREQUEST\"}[$__interval]))",
+          "legendFormat": "REQUEST",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "${loki_uid}" },
+          "expr": "sum(rate({job=\"dhcp\", type=\"DHCPOFFER\"}[$__interval]))",
+          "legendFormat": "OFFER",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "custom": { "displayMode": "lcd-gauge", "align": "auto" },
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "ip" }, "properties": [{ "id": "custom.width", "value": 120 }] },
+          { "matcher": { "id": "byName", "options": "hostname" }, "properties": [{ "id": "custom.width", "value": 150 }] },
+          { "matcher": { "id": "byName", "options": "Value" }, "properties": [{ "id": "custom.width", "value": 150 }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 12 },
+      "id": 6,
+      "options": {
+        "footer": { "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Value" }]
+      },
+      "title": "Machines actives (IP + hostname)",
+      "type": "table",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "topk(20, sum by (ip, hostname) (count_over_time({job=\"dhcp\", type=\"DHCPACK\"}[24h])))",
+        "legendFormat": "{{ip}} — {{hostname}}",
+        "refId": "A",
+        "instant": true
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" }
+      },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 12 },
+      "id": 7,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true, "values": ["percent", "value"] },
+        "pieType": "donut",
+        "tooltip": { "mode": "single" }
+      },
+      "title": "Répartition types DHCP",
+      "type": "piechart",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${loki_uid}" },
+          "expr": "sum(count_over_time({job=\"dhcp\", type=\"DHCPACK\"}[24h]))",
+          "legendFormat": "ACK",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "${loki_uid}" },
+          "expr": "sum(count_over_time({job=\"dhcp\", type=\"DHCPREQUEST\"}[24h]))",
+          "legendFormat": "REQUEST",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "${loki_uid}" },
+          "expr": "sum(count_over_time({job=\"dhcp\", type=\"DHCPOFFER\"}[24h]))",
+          "legendFormat": "OFFER",
+          "refId": "C"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "${loki_uid}" },
+          "expr": "sum(count_over_time({job=\"dhcp\", type=\"DHCPNAK\"}[24h]))",
+          "legendFormat": "NAK",
+          "refId": "D"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 22 },
+      "id": 8,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "title": "Logs DHCP en temps réel",
+      "type": "logs",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "{job=\"dhcp\"}",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 32 },
+      "id": 9,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "title": "📧 Logs Mail en temps réel",
+      "type": "logs",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "{job=\"mail\"}",
+        "refId": "A"
+      }]
+    }
