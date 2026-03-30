@@ -1,6 +1,9 @@
-# Cacher setup.sh du comptage linguist
 setup.sh linguist-detectable=false
 
-# Forcer la détection des configs
+# Forcer la détection dans les sous-dossiers
+ansible/**/*.yml linguist-language=YAML
+grafana/**/*.json linguist-language=JSON
+loki/**/*.yml linguist-language=YAML
+prometheus/**/*.yml linguist-language=YAML
+promtail/**/*.yml linguist-language=YAML
 *.yml linguist-language=YAML
-*.yaml linguist-language=YAML
