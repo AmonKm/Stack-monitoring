@@ -1,36 +1,18 @@
-# Intégration monitoring — instructions groupe 6.1
+## Intégration Ansible
 
-## Ce que ça fait
-Ce rôle Ansible installe automatiquement le client monitoring sur chaque machine :
-- node_exporter (métriques système) pour prometheus
-- rsyslog configuré pour envoyer les logs vers Promtail
-- Firewall : port 9100 ouvert uniquement vers la VM monitoring
-
-## Utilisation
-
-### 1. Adapter l'inventaire
-Copier `inventory.example.yml` → `inventory.yml`
-Remplacer les IPs par les vraies IPs de votre infra Terraform/Ansible.
-
-### 2. Définir l'IP de la VM monitoring
-Dans `inventory.yml`, mettre la vraie IP de la VM monitoring :
+Pour intégrer le monitoring dans un repo Ansible existant, copier `tasks/monitoring-client.yml` dans vos tâches et ajouter les variables suivantes dans `group_vars/all.yml` :
 ```yaml
-monitoring_ip: "192.168.10.50"   # IP de la VM monitoring
+monitoring_ip: "10.0.0.13"    # ← IP de votre VM monitoring
+node_exporter_version: "1.10.2"
 ```
 
-### 3. Exécuter
-```bash
-ansible-playbook -i inventory.yml deploy-monitoring-client.yml
+Puis inclure dans votre playbook :
+```yaml
+- name: Installer monitoring client
+  include_tasks: tasks/monitoring-client.yml
 ```
 
-### 4. Résultat
-- Prometheus détecte automatiquement les nouvelles machines
-- Les logs arrivent dans Loki via rsyslog
-- Grafana affiche tout sans intervention manuelle
-
-## Ports requis
-| Port | Proto | Direction | Usage |
-|------|-------|-----------|-------|
-| 9100 | TCP | machines → monitoring | node_exporter |
-| 514  | UDP | machines → monitoring | syslog |
-| 3000 | TCP | réseau → monitoring | Grafana UI |
+Ce que ça installe automatiquement sur chaque VM :
+- `node_exporter` (métriques système → Prometheus)
+- `rsyslog` configuré pour envoyer les logs vers Loki
+- Règle firewall `ufw` pour le port 9100
