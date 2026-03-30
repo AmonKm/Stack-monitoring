@@ -1,11 +1,39 @@
-  # ── pfsense filterlog (via rsyslog) ──────────────────────
-  - job_name: "pfsense-filterlog"
+server:
+  http_listen_port: 9080
+  log_level: warn
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    backoff_config:
+      min_period: 500ms
+      max_period: 5m
+      max_retries: 10
+
+scrape_configs:
+
+  # ── Journald (VM monitoring) ──────────────────────────────
+  - job_name: "journald"
+    journal:
+      max_age: 12h
+      labels:
+        job: "journald"
+        host: "monitoring"
+    pipeline_stages:
+      - labels:
+          unit: __journal__systemd_unit__
+
+  # ── pfsense — firewall (filterlog) ───────────────────────
+  - job_name: "pfsense-firewall"
     static_configs:
       - targets: ["localhost"]
         labels:
           job: "pfsense"
           host: "pfsense"
-          __path__: /var/log/pfsense/filterlog.log
+          type: "firewall"
+          __path__: /var/log/syslog-remote/pfsense/filterlog.log
     pipeline_stages:
       - regex:
           expression: '(?P<rule>\d+),[^,]*,[^,]*,[^,]*,(?P<interface>\w+),(?P<reason>\w+),(?P<action>block|pass),(?P<direction>in|out),(?P<ip_ver>\d+)(?:,[^,]*){9},(?P<src_ip>[\d.]+),(?P<dst_ip>[\d.]+),(?P<src_port>\d+),(?P<dst_port>\d+)'
@@ -18,11 +46,44 @@
           src_port:
           dst_port:
 
-  # ── pfsense autres logs (via rsyslog) ────────────────────
-  - job_name: "pfsense-syslog"
+  # ── pfsense — système ─────────────────────────────────────
+  - job_name: "pfsense-system"
     static_configs:
       - targets: ["localhost"]
         labels:
           job: "pfsense"
           host: "pfsense"
-          __path__: /var/log/pfsense/pfsense.log
+          type: "system"
+          __path__: /var/log/syslog-remote/pfsense/system.log
+
+  # ── VM mail ───────────────────────────────────────────────
+  - job_name: "mail"
+    static_configs:
+      - targets: ["localhost"]
+        labels:
+          job: "mail"
+          host: "mail"
+          __path__: /var/log/syslog-remote/mail/*.log
+    pipeline_stages:
+      - regex:
+          expression: '(?P<program>postfix|dovecot|smtp)\S*'
+      - labels:
+          program:
+
+  # ── VM DNS ────────────────────────────────────────────────
+  - job_name: "dns"
+    static_configs:
+      - targets: ["localhost"]
+        labels:
+          job: "dns"
+          host: "dns"
+          __path__: /var/log/syslog-remote/dns/*.log
+
+  # ── VM web ────────────────────────────────────────────────
+  - job_name: "web"
+    static_configs:
+      - targets: ["localhost"]
+        labels:
+          job: "web"
+          host: "web"
+          __path__: /var/log/syslog-remote/web/*.log
