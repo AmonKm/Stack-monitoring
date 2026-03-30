@@ -1,9 +1,27 @@
 - targets:
-    - "10.0.0.10:9100"    # dns-01
-    - "10.0.0.11:9100"    # dhcp-01
-    - "10.0.0.20:9100"    # web-01
-    - "10.0.0.21:9100"    # mail-01
+    - "10.0.0.10:9100"
   labels:
     env: "si-principal"
+    role: "dns"
     provisioned_by: "ansible"
 
+- targets:
+    - "10.0.0.11:9100"
+  labels:
+    env: "si-principal"
+    role: "dhcp"
+    provisioned_by: "ansible"
+
+- targets:
+    - "10.0.0.20:9100"
+  labels:
+    env: "si-principal"
+    role: "web"
+    provisioned_by: "ansible"
+
+- targets:
+    - "10.0.0.21:9100"
+  labels:
+    env: "si-principal"
+    role: "mail"
+    provisioned_by: "ansible"
