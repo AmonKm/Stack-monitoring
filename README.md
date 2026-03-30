@@ -39,7 +39,7 @@ génère tous les fichiers de configuration et lance Docker Compose.
             │   UDP :514      │    │   métriques    │
             └──────┬──────────┘    └──────┬─────────┘
                    │                      │
-            ┌──────▼──────┐               │ datasource
+            ┌──────▼──────┐               │
             │   Promtail  │               │
             │   lit logs  │               │
             └──────┬──────┘               │
