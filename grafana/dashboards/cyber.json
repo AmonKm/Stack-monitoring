@@ -1,0 +1,341 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "red" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Ports suspects bloqués (24h)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "sum(count_over_time({job=\"pfsense\", type=\"firewall\", action=\"block\", dst_port=~\"22|23|3389|445|1433|3306\"}[24h]))",
+        "legendFormat": "suspects",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "orange" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "orange", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Domaines DNS résolus (24h)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "count(sum by (domain) (count_over_time({job=\"dns\"}[24h])))",
+        "legendFormat": "domaines",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Machines DHCP (24h)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "count(sum by (ip) (count_over_time({job=\"dhcp\", type=\"DHCPACK\"}[24h])))",
+        "legendFormat": "machines",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "purple" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Erreurs DNS (24h)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "sum(count_over_time({job=\"dns\"} |~ \"unreachable|error|failed|refused\"[24h]))",
+        "legendFormat": "erreurs",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 15, "showPoints": "never" },
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "ports suspects" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] },
+          { "matcher": { "id": "byName", "options": "trafic total" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+      "id": 5,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi" }
+      },
+      "title": "Timeline — ports suspects vs trafic total",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${loki_uid}" },
+          "expr": "sum(rate({job=\"pfsense\", type=\"firewall\", dst_port=~\"22|23|3389|445|1433|3306\"}[$__interval]))",
+          "legendFormat": "ports suspects",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "${loki_uid}" },
+          "expr": "sum(rate({job=\"pfsense\", type=\"firewall\"}[$__interval]))",
+          "legendFormat": "trafic total",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 100 }
+            ]
+          },
+          "custom": { "displayMode": "lcd-gauge", "align": "auto" },
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "src_ip" }, "properties": [{ "id": "custom.width", "value": 150 }] },
+          { "matcher": { "id": "byName", "options": "dst_port" }, "properties": [{ "id": "custom.width", "value": 100 }] },
+          { "matcher": { "id": "byName", "options": "Value" }, "properties": [{ "id": "custom.width", "value": 150 }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 12 },
+      "id": 6,
+      "options": {
+        "footer": { "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Value" }]
+      },
+      "title": "Scans de ports suspects (src → port)",
+      "type": "table",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "topk(15, sum by (src_ip, dst_port) (count_over_time({job=\"pfsense\", type=\"firewall\", dst_port=~\"22|23|3389|445|1433|3306\"}[24h])))",
+        "legendFormat": "{{src_ip}} → {{dst_port}}",
+        "refId": "A",
+        "instant": true
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 5 },
+              { "color": "red", "value": 20 }
+            ]
+          },
+          "custom": { "displayMode": "lcd-gauge", "align": "auto" },
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "domain" }, "properties": [{ "id": "custom.width", "value": 250 }] },
+          { "matcher": { "id": "byName", "options": "Value" }, "properties": [{ "id": "custom.width", "value": 150 }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 12 },
+      "id": 7,
+      "options": {
+        "footer": { "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Value" }]
+      },
+      "title": "Top domaines DNS résolus",
+      "type": "table",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "topk(15, sum by (domain) (count_over_time({job=\"dns\"}[24h])))",
+        "legendFormat": "{{domain}}",
+        "refId": "A",
+        "instant": true
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 3 },
+              { "color": "red", "value": 10 }
+            ]
+          },
+          "custom": { "displayMode": "color-background", "align": "auto" },
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "ip" }, "properties": [{ "id": "custom.width", "value": 130 }] },
+          { "matcher": { "id": "byName", "options": "hostname" }, "properties": [{ "id": "custom.width", "value": 150 }] },
+          { "matcher": { "id": "byName", "options": "Value" }, "properties": [{ "id": "custom.width", "value": 100 }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 22 },
+      "id": 8,
+      "options": {
+        "footer": { "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Value" }]
+      },
+      "title": "Machines sur le réseau (DHCP)",
+      "type": "table",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "topk(20, sum by (ip, hostname) (count_over_time({job=\"dhcp\", type=\"DHCPACK\"}[24h])))",
+        "legendFormat": "{{ip}} — {{hostname}}",
+        "refId": "A",
+        "instant": true
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "showPoints": "never" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 22 },
+      "id": 9,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi" }
+      },
+      "title": "Activité DNS dans le temps",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${loki_uid}" },
+          "expr": "sum(rate({job=\"dns\"}[$__interval]))",
+          "legendFormat": "requêtes DNS",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "${loki_uid}" },
+          "expr": "sum(rate({job=\"dns\"} |~ \"unreachable|error\"[$__interval]))",
+          "legendFormat": "erreurs DNS",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 32 },
+      "id": 10,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "title": "Logs suspects en temps réel (ports 22/23/3389/445)",
+      "type": "logs",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "{job=\"pfsense\", type=\"firewall\", dst_port=~\"22|23|3389|445|1433|3306\"}",
+        "refId": "A"
+      }]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "tags": ["cyber", "securite", "firewall", "dns"],
+  "templating": {
+    "list": [{
+      "current": {},
+      "hide": 2,
+      "name": "loki_uid",
+      "query": "loki",
+      "type": "datasource"
+    }]
+  },
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Cybersécurité — Détection & Analyse",
+  "uid": "cyber-security-v1",
+  "version": 1
+}
