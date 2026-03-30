@@ -288,33 +288,36 @@ Les dashboards sont chargés automatiquement au démarrage de Grafana depuis `gr
 ---
 
 ## Structure du dépôt
-
 ```
 Stack-monitoring/
-├── docker-compose.yml              # Stack principal
-├── .env.example                    # Variables → copier en .env
+├── docker-compose.yml              # Stack principal — 4 services : Prometheus, Loki, Promtail, Grafana
+├── setup.sh                        # Script interactif de configuration automatique
+├── .env.example                    # Variables d'environnement → copier en .env
 ├── prometheus/
-│   ├── prometheus.yml              # Config Prometheus
+│   ├── prometheus.yml              # Config Prometheus (scrape interval, règles)
 │   ├── targets/
-│   │   ├── si.yml                  # IPs des VMs à scraper
-│   │   └── firewall.yml            # IP du firewall
-│   └── rules/                      # Règles d'alerting (optionnel)
+│   │   ├── si.yml                  # IPs et rôles des VMs à superviser
+│   │   └── firewall.yml            # IP du firewall pfsense
+│   └── rules/                      # Règles d'alerting Prometheus (optionnel)
 ├── loki/
-│   └── loki-config.yml             # Config Loki (stockage filesystem)
+│   └── loki-config.yml             # Config Loki — stockage filesystem, rétention 30j
 ├── promtail/
-│   └── promtail-config.yml         # Sources de logs à collecter
+│   └── promtail-config.yml         # Sources de logs — pfsense, DHCP, DNS, mail, web
 ├── grafana/
 │   ├── provisioning/
-│   │   ├── datasources/            # Datasources auto (Prometheus + Loki)
-│   │   └── dashboards/             # Config chargement dashboards
-│   └── dashboards/                 # JSON des dashboards Grafana
-│       ├── pfsense-firewall.json
-│       ├── dhcp-mail.json
-│       ├── systeme.json
-│       └── cyber.json
-├── ansible/                        # Playbooks node_exporter
+│   │   ├── datasources/            # Déclaration automatique Prometheus + Loki
+│   │   └── dashboards/             # Chargement automatique des dashboards au démarrage
+│   └── dashboards/                 # Dashboards JSON prêts à l'emploi
+│       ├── pfsense-firewall.json   # Trafic firewall, top IPs, ports suspects
+│       ├── dhcp-mail.json          # Baux DHCP, machines actives, logs mail
+│       ├── systeme.json            # CPU, RAM, disque, réseau, uptime par VM
+│       └── cyber.json              # Cybersécurité — ports suspects, DNS, réseau
+├── ansible/
+│   ├── README.md                   # Instructions d'intégration dans un repo Ansible existant
+│   └── tasks/
+│       └── monitoring-client.yml   # Tâche Ansible — installe node_exporter + rsyslog sur une VM
 └── docs/
-    └── rsyslog.conf                # Config rsyslog → copier sur la VM
+    └── rsyslog.conf                # Config rsyslog à copier sur la VM monitoring
 ```
 
 ---
