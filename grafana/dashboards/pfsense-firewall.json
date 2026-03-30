@@ -80,7 +80,7 @@
         "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
         "textMode": "auto"
       },
-      "title": "📊 Total (24h)",
+      "title": "Total (24h)",
       "type": "stat",
       "targets": [{
         "datasource": { "type": "loki", "uid": "${loki_uid}" },
