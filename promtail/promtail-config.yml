@@ -100,7 +100,7 @@ scrape_configs:
           __path__: /var/log/syslog-remote/dns-01/*.log
     pipeline_stages:
       - regex:
-          expression: 'resolving \'(?P<domain>[^/]+)/(?P<record_type>[^/]+)'
+          expression: "resolving '(?P<domain>[^/]+)/(?P<record_type>[^/]+)"
       - labels:
           domain:
           record_type:
