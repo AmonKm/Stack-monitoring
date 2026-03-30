@@ -55,21 +55,22 @@ scrape_configs:
       label_structured_data: yes
       labels:
         job: "syslog"
+    relabel_configs:
+      - source_labels: [__syslog_message_hostname]
+        target_label: host
+      - source_labels: [__syslog_message_app_name]
+        target_label: syslog_app_name
+      - source_labels: [__syslog_message_severity]
+        target_label: severity
+      - source_labels: [__syslog_message_facility]
+        target_label: facility
     pipeline_stages:
-      # Extraction program depuis le message pour tous les logs
-      - regex:
-          expression: '(?P<program>[\w\-]+)(\[\d+\])?\s*:'
-          source: __syslog_message__
-      - labels:
-          program:
-
-      # ── filterlog (firewall pfsense) ──────────────────────
+      # ── pfsense filterlog ─────────────────────────────────
       - match:
-          selector: '{program="filterlog"}'
+          selector: '{syslog_app_name="filterlog"}'
           stages:
             - regex:
                 expression: '(?P<rule>\d+),[^,]*,[^,]*,[^,]*,(?P<interface>\w+),(?P<reason>\w+),(?P<action>block|pass),(?P<direction>in|out),(?P<ip_ver>\d+)(?:,[^,]*){9},(?P<src_ip>[\d.]+),(?P<dst_ip>[\d.]+),(?P<src_port>\d+),(?P<dst_port>\d+)'
-                source: __syslog_message__
             - labels:
                 interface:
                 action:
@@ -79,13 +80,12 @@ scrape_configs:
                 src_port:
                 dst_port:
 
-      # ── mail (dovecot, postfix, smtp) ─────────────────────
+      # ── mail ──────────────────────────────────────────────
       - match:
-          selector: '{program=~"dovecot|postfix|smtp|imap"}'
+          selector: '{syslog_app_name=~"dovecot|postfix|smtp"}'
           stages:
             - regex:
                 expression: '(?P<mail_user>\S+@\S+)'
-                source: __syslog_message__
             - labels:
                 mail_user:
 
