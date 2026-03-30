@@ -23,7 +23,7 @@
         "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
         "textMode": "auto"
       },
-      "title": "📦 Baux DHCP (24h)",
+      "title": "Baux DHCP (24h)",
       "type": "stat",
       "targets": [{
         "datasource": { "type": "loki", "uid": "${loki_uid}" },
@@ -50,7 +50,7 @@
         "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
         "textMode": "auto"
       },
-      "title": "📡 DHCP Offers (24h)",
+      "title": "DHCP Offers (24h)",
       "type": "stat",
       "targets": [{
         "datasource": { "type": "loki", "uid": "${loki_uid}" },
@@ -77,7 +77,7 @@
         "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
         "textMode": "auto"
       },
-      "title": "🔄 DHCP Requests (24h)",
+      "title": "DHCP Requests (24h)",
       "type": "stat",
       "targets": [{
         "datasource": { "type": "loki", "uid": "${loki_uid}" },
