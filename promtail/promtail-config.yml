@@ -1,100 +1,29 @@
-server:
-  http_listen_port: 9080
-  log_level: warn
-
-positions:
-  filename: /tmp/positions.yaml
-
-clients:
-  - url: http://loki:3100/loki/api/v1/push
-    backoff_config:
-      min_period: 500ms
-      max_period: 5m
-      max_retries: 10
-
-scrape_configs:
-
-  # ── Journald (systemd) ────────────────────────────────────
-  - job_name: "journald"
-    journal:
-      max_age: 12h
-      labels:
-        job: "journald"
-        host: "monitoring"
-    pipeline_stages:
-      - labels:
-          unit: __journal__systemd_unit__
-
-  # ── Cowrie JSON (Honeypot) ────────────────────────────────
-  - job_name: "honeypot-cowrie"
-    static_configs:
-      - targets: ["localhost"]
-        labels:
-          job: "honeypot"
-          type: "cowrie"
-          __path__: /var/log/cowrie/cowrie.json
-    pipeline_stages:
-      - json:
-          expressions:
-            eventid: eventid
-            src_ip: src_ip
-            username: username
-            password: password
-            protocol: protocol
-      - labels:
-          eventid:
-          src_ip:
-          protocol:
-  # ── Syslog UDP 514 (pfsense + autres) ────────────────────
+  # ── Syslog UDP 514 ────────────────────────────────────────
   - job_name: "syslog"
     syslog:
       listen_address: "0.0.0.0:514"
       listen_protocol: udp
       idle_timeout: 60s
       use_incoming_timestamp: true
-      label_structured_data: yes
       labels:
         job: "syslog"
-    relabel_configs:
-      - source_labels: [__syslog_message_hostname]
-        target_label: host
-      - source_labels: [__syslog_message_app_name]
-        target_label: syslog_app_name
-      - source_labels: [__syslog_message_severity]
-        target_label: severity
-      - source_labels: [__syslog_message_facility]
-        target_label: facility
+
+  # ── pfsense filterlog (fichier) ───────────────────────────
+  - job_name: "pfsense"
+    static_configs:
+      - targets: ["localhost"]
+        labels:
+          job: "pfsense"
+          host: "pfsense"
+          __path__: /var/log/pfsense/filterlog.log
     pipeline_stages:
-      # ── pfsense filterlog ─────────────────────────────────
-      - match:
-          selector: '{syslog_app_name="filterlog"}'
-          stages:
-            - regex:
-                expression: '(?P<rule>\d+),[^,]*,[^,]*,[^,]*,(?P<interface>\w+),(?P<reason>\w+),(?P<action>block|pass),(?P<direction>in|out),(?P<ip_ver>\d+)(?:,[^,]*){9},(?P<src_ip>[\d.]+),(?P<dst_ip>[\d.]+),(?P<src_port>\d+),(?P<dst_port>\d+)'
-            - labels:
-                interface:
-                action:
-                direction:
-                src_ip:
-                dst_ip:
-                src_port:
-                dst_port:
-
-      # ── mail ──────────────────────────────────────────────
-      - match:
-          selector: '{syslog_app_name=~"dovecot|postfix|smtp"}'
-          stages:
-            - regex:
-                expression: '(?P<mail_user>\S+@\S+)'
-            - labels:
-                mail_user:
-
-      # ── dhcp ──────────────────────────────────────────────
-      - match:
-          selector: '{program="dhcpd"}'
-          stages:
-            - regex:
-                expression: '(?P<dhcp_ip>\d+\.\d+\.\d+\.\d+)'
-                source: __syslog_message__
-            - labels:
-                dhcp_ip:
+      - regex:
+          expression: '(?P<rule>\d+),[^,]*,[^,]*,[^,]*,(?P<interface>\w+),(?P<reason>\w+),(?P<action>block|pass),(?P<direction>in|out),(?P<ip_ver>\d+)(?:,[^,]*){9},(?P<src_ip>[\d.]+),(?P<dst_ip>[\d.]+),(?P<src_port>\d+),(?P<dst_port>\d+)'
+      - labels:
+          interface:
+          action:
+          direction:
+          src_ip:
+          dst_ip:
+          src_port:
+          dst_port:
