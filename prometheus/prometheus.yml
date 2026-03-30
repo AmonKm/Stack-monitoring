@@ -1,139 +1,20 @@
 global:
-  scrape_interval: 15s
-  evaluation_interval: 15s
-  external_labels:
-    cluster: "si-projet"
-    env: "production"
+  scrape_interval: 30s
+  evaluation_interval: 30s
 
 rule_files:
-  - "/etc/prometheus/rules/alerting.yml"
-  - "/etc/prometheus/rules/recording.yml"
+  - /etc/prometheus/rules/*.yml
 
 scrape_configs:
 
-  - job_name: "prometheus"
+  - job_name: "monitoring"
     static_configs:
-      - targets: ["localhost:9090"]
+      - targets: ["host.docker.internal:9100"]
+        labels:
+          host: "monitoring"
 
-  - job_name: "firewall"
+  - job_name: "node"
     file_sd_configs:
       - files:
-          - "/etc/prometheus/targets/firewall.yml"
+          - /etc/prometheus/targets/*.yml
         refresh_interval: 30s
-    scrape_interval: 10s
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: instance
-        regex: "([^:]+):.*"
-        replacement: "$1"
-
-  - job_name: "node-exporter"
-    file_sd_configs:
-      - files:
-          - "/etc/prometheus/targets/si.yml"
-        refresh_interval: 30s
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: instance
-        regex: "([^:]+):.*"
-        replacement: "$1"
-
-  - job_name: "honeypot"
-    file_sd_configs:
-      - files:
-          - "/etc/prometheus/targets/honeypot.yml"
-        refresh_interval: 15s
-    scrape_interval: 5s
-
-  # Jobs commentés — activer quand le groupe 1 a de vrais serveurs
-  # - job_name: "dns"
-  #   static_configs:
-  #     - targets: ["dns01:9119"]
-  #       labels:
-  #         role: "dns"
-  #
-  # - job_name: "mail"
-  #   static_configs:
-  #     - targets: ["mail01:9154"]
-  #       labels:
-  #         role: "mail"
-
-  # ── Blackbox — sondes HTTP ────────────────────────────────
-  - job_name: "blackbox-http"
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "http://web-01"           # serveur web groupe 1
-          - "http://10.0.0.20"        # IP directe
-          - "https://google.com"      # test externe
-        labels:
-          type: "http"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox:9115
-
-  # ── Blackbox — sondes TCP ports ───────────────────────────
-  - job_name: "blackbox-tcp"
-    metrics_path: /probe
-    params:
-      module: [tcp_connect]
-    static_configs:
-      - targets:
-          - "10.0.0.20:80"    # web HTTP
-          - "10.0.0.20:443"   # web HTTPS
-          - "10.0.0.21:25"    # mail SMTP
-          - "10.0.0.21:143"   # mail IMAP
-          - "10.0.0.10:53"    # DNS TCP
-        labels:
-          type: "tcp"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox:9115
-
-  # ── Blackbox — sondes DNS ─────────────────────────────────
-  - job_name: "blackbox-dns"
-    metrics_path: /probe
-    params:
-      module: [dns_udp]
-    static_configs:
-      - targets:
-          - "10.0.0.10:53"    # serveur DNS groupe 1
-        labels:
-          type: "dns"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox:9115
-
-  # ── Blackbox — sondes ICMP (ping) ─────────────────────────
-  - job_name: "blackbox-icmp"
-    metrics_path: /probe
-    params:
-      module: [icmp]
-    static_configs:
-      - targets:
-          - "10.0.0.10"    # dns-01
-          - "10.0.0.20"    # web-01
-          - "10.0.0.21"    # mail-01
-        labels:
-          type: "icmp"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox:9115
