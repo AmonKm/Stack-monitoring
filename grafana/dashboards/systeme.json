@@ -130,7 +130,7 @@
         "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
         "tooltip": { "mode": "multi" }
       },
-      "title": "📈 CPU timeline — toutes VMs",
+      "title": "CPU timeline — toutes VMs",
       "type": "timeseries",
       "targets": [{
         "datasource": { "type": "prometheus", "uid": "${prometheus_uid}" },
