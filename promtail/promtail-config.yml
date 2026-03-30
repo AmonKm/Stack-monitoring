@@ -45,7 +45,7 @@ scrape_configs:
           eventid:
           src_ip:
           protocol:
- # ── Syslog UDP 514 (pfsense + autres) ────────────────────
+  # ── Syslog UDP 514 (pfsense + autres) ────────────────────
   - job_name: "syslog"
     syslog:
       listen_address: "0.0.0.0:514"
@@ -56,9 +56,16 @@ scrape_configs:
       labels:
         job: "syslog"
     pipeline_stages:
-      # ── pfsense filterlog ─────────────────────────────────
+      # Extraction program depuis le message pour tous les logs
+      - regex:
+          expression: '(?P<program>[\w\-]+)(\[\d+\])?\s*:'
+          source: __syslog_message__
+      - labels:
+          program:
+
+      # ── filterlog (firewall pfsense) ──────────────────────
       - match:
-          selector: '{job="syslog"}'
+          selector: '{program="filterlog"}'
           stages:
             - regex:
                 expression: '(?P<rule>\d+),[^,]*,[^,]*,[^,]*,(?P<interface>\w+),(?P<reason>\w+),(?P<action>block|pass),(?P<direction>in|out),(?P<ip_ver>\d+)(?:,[^,]*){9},(?P<src_ip>[\d.]+),(?P<dst_ip>[\d.]+),(?P<src_port>\d+),(?P<dst_port>\d+)'
@@ -71,3 +78,23 @@ scrape_configs:
                 dst_ip:
                 src_port:
                 dst_port:
+
+      # ── mail (dovecot, postfix, smtp) ─────────────────────
+      - match:
+          selector: '{program=~"dovecot|postfix|smtp|imap"}'
+          stages:
+            - regex:
+                expression: '(?P<mail_user>\S+@\S+)'
+                source: __syslog_message__
+            - labels:
+                mail_user:
+
+      # ── dhcp ──────────────────────────────────────────────
+      - match:
+          selector: '{program="dhcpd"}'
+          stages:
+            - regex:
+                expression: '(?P<dhcp_ip>\d+\.\d+\.\d+\.\d+)'
+                source: __syslog_message__
+            - labels:
+                dhcp_ip:
