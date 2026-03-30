@@ -1,3 +1,5 @@
+![Stack](https://img.shields.io/badge/stack-Prometheus%20%7C%20Loki%20%7C%20Grafana-orange)
+![Docker](https://img.shields.io/badge/docker-compose-blue)
 # Stack Monitoring — Groupe 6.2
 
 Stack de supervision **Prometheus + Loki + Grafana** déployable sur n'importe quelle infrastructure Linux.  
