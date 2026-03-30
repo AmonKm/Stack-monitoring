@@ -93,28 +93,34 @@
       "datasource": { "type": "loki", "uid": "${loki_uid}" },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "fixed", "fixedColor": "purple" },
-          "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] },
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          },
+          "custom": { "displayMode": "lcd-gauge", "align": "auto" },
           "unit": "short"
         }
       },
       "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
       "id": 11,
       "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
-        "textMode": "auto"
+        "footer": { "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Value" }]
       },
-      "title": "Interfaces actives",
-      "type": "stat",
+      "title": "🎯 Top 5 IP destination",
+      "type": "table",
       "targets": [{
         "datasource": { "type": "loki", "uid": "${loki_uid}" },
-        "expr": "count(sum by (interface) (count_over_time({job=\"pfsense\", type=\"firewall\"}[24h])))",
-        "legendFormat": "interfaces",
-        "refId": "A"
+        "expr": "topk(5, sum by (dst_ip) (count_over_time({job=\"pfsense\", type=\"firewall\"}[24h])))",
+        "legendFormat": "{{dst_ip}}",
+        "refId": "A",
+        "instant": true
       }]
     },
     {
