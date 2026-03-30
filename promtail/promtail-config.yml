@@ -45,7 +45,6 @@ scrape_configs:
           eventid:
           src_ip:
           protocol:
-
   # ── Syslog UDP 514 (pfsense + autres) ────────────────────
   - job_name: "syslog"
     syslog:
@@ -55,19 +54,12 @@ scrape_configs:
       use_incoming_timestamp: true
       labels:
         job: "syslog"
+    relabel_configs:
+      - source_labels: [__syslog_message_hostname__]
+        target_label: host
+      - source_labels: [__syslog_message_app_name__]
+        target_label: program
     pipeline_stages:
-
-      # Extraction host + program depuis les champs syslog natifs
-      - template:
-          source: host
-          template: '{{ .Value "__syslog_message_hostname" }}'
-      - template:
-          source: program
-          template: '{{ .Value "__syslog_message_app_name" }}'
-      - labels:
-          host:
-          program:
-
       # ── pfsense filterlog ─────────────────────────────────
       - match:
           selector: '{program="filterlog"}'
