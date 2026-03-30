@@ -119,7 +119,7 @@ services:
     container_name: promtail
     restart: unless-stopped
     volumes:
-      - /var/log/pfsense:/var/log/pfsense 
+      - /var/log/pfsense:/var/log/pfsense :ro
       - ./promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
       - /var/log:/var/log:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
