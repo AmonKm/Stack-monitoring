@@ -1,15 +1,5 @@
-  # ── Syslog UDP 514 ────────────────────────────────────────
-  - job_name: "syslog"
-    syslog:
-      listen_address: "0.0.0.0:514"
-      listen_protocol: udp
-      idle_timeout: 60s
-      use_incoming_timestamp: true
-      labels:
-        job: "syslog"
-
-  # ── pfsense filterlog (fichier) ───────────────────────────
-  - job_name: "pfsense"
+  # ── pfsense filterlog (via rsyslog) ──────────────────────
+  - job_name: "pfsense-filterlog"
     static_configs:
       - targets: ["localhost"]
         labels:
@@ -27,3 +17,12 @@
           dst_ip:
           src_port:
           dst_port:
+
+  # ── pfsense autres logs (via rsyslog) ────────────────────
+  - job_name: "pfsense-syslog"
+    static_configs:
+      - targets: ["localhost"]
+        labels:
+          job: "pfsense"
+          host: "pfsense"
+          __path__: /var/log/pfsense/pfsense.log
