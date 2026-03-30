@@ -45,24 +45,20 @@ scrape_configs:
           eventid:
           src_ip:
           protocol:
-  # ── Syslog UDP 514 (pfsense + autres) ────────────────────
+ # ── Syslog UDP 514 (pfsense + autres) ────────────────────
   - job_name: "syslog"
     syslog:
       listen_address: "0.0.0.0:514"
       listen_protocol: udp
       idle_timeout: 60s
       use_incoming_timestamp: true
+      label_structured_data: yes
       labels:
         job: "syslog"
-    relabel_configs:
-      - source_labels: [__syslog_message_hostname__]
-        target_label: host
-      - source_labels: [__syslog_message_app_name__]
-        target_label: program
     pipeline_stages:
       # ── pfsense filterlog ─────────────────────────────────
       - match:
-          selector: '{program="filterlog"}'
+          selector: '{job="syslog"}'
           stages:
             - regex:
                 expression: '(?P<rule>\d+),[^,]*,[^,]*,[^,]*,(?P<interface>\w+),(?P<reason>\w+),(?P<action>block|pass),(?P<direction>in|out),(?P<ip_ver>\d+)(?:,[^,]*){9},(?P<src_ip>[\d.]+),(?P<dst_ip>[\d.]+),(?P<src_port>\d+),(?P<dst_port>\d+)'
@@ -75,11 +71,3 @@ scrape_configs:
                 dst_ip:
                 src_port:
                 dst_port:
-
-      # ── pfsense autres (dhcp, openvpn, etc.) ─────────────
-      - match:
-          selector: '{host="pfSense.home.arpa"}'
-          stages:
-            - labels:
-                host:
-                program:
