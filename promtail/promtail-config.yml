@@ -89,3 +89,18 @@ scrape_configs:
           job: "web"
           host: "web-01"
           __path__: /var/log/syslog-remote/web-01/*.log
+
+  # ── VM DNS ────────────────────────────────────────────────
+  - job_name: "dns"
+    static_configs:
+      - targets: ["localhost"]
+        labels:
+          job: "dns"
+          host: "dns-01"
+          __path__: /var/log/syslog-remote/dns-01/*.log
+    pipeline_stages:
+      - regex:
+          expression: 'resolving \'(?P<domain>[^/]+)/(?P<record_type>[^/]+)'
+      - labels:
+          domain:
+          record_type:
