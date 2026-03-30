@@ -62,7 +62,7 @@ scrape_configs:
       - targets: ["localhost"]
         labels:
           job: "mail"
-          host: "mail"
+          host: "mail-01"
           __path__: /var/log/syslog-remote/mail-01/*.log
 
   # ── VM DHCP ───────────────────────────────────────────────
@@ -71,5 +71,21 @@ scrape_configs:
       - targets: ["localhost"]
         labels:
           job: "dhcp"
-          host: "dhcp"
+          host: "dhcp-01"
           __path__: /var/log/syslog-remote/dhcp-01/*.log
+    pipeline_stages:
+      - regex:
+          expression: '(?P<type>DHCPREQUEST|DHCPACK|DHCPOFFER|DHCPDISCOVER|DHCPNAK|DHCPRELEASE) (?:for|on) (?P<ip>[\d.]+) (?:from|to) (?P<mac>[0-9a-f:]+)(?: \((?P<hostname>[^)]+)\))?'
+      - labels:
+          type:
+          ip:
+          hostname:
+
+  # ── VM web ────────────────────────────────────────────────
+  - job_name: "web"
+    static_configs:
+      - targets: ["localhost"]
+        labels:
+          job: "web"
+          host: "web-01"
+          __path__: /var/log/syslog-remote/web-01/*.log
