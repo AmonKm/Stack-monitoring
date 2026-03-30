@@ -1,9 +1,6 @@
-# .gitattributes
+# Cacher setup.sh du comptage linguist
+setup.sh linguist-detectable=false
+
+# Forcer la détection des configs
 *.yml linguist-language=YAML
 *.yaml linguist-language=YAML
-
-# Si tu veux cacher les scripts shell du comptage
-*.sh linguist-detectable=false
-
-# Ou au contraire marquer certains dossiers comme vendored (ignorés)
-scripts/* linguist-vendored=true
