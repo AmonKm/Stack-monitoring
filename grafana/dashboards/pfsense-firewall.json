@@ -1,0 +1,290 @@
+{
+  "__inputs": [],
+  "__requires": [],
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "red" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["count"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Blocked (24h)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "count_over_time({job=\"pfsense\", type=\"firewall\", action=\"block\"}[24h])",
+        "legendFormat": "blocked",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "green" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["count"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Passed (24h)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "count_over_time({job=\"pfsense\", type=\"firewall\", action=\"pass\"}[24h])",
+        "legendFormat": "passed",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 0 },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["count"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Total (24h)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "count_over_time({job=\"pfsense\", type=\"firewall\"}[24h])",
+        "legendFormat": "total",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        }
+      },
+      "gridPos": { "h": 8, "w": 16, "x": 0, "y": 4 },
+      "id": 4,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "title": "Traffic firewall — block vs pass",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${loki_uid}" },
+          "expr": "sum(count_over_time({job=\"pfsense\", type=\"firewall\", action=\"block\"}[$__interval]))",
+          "legendFormat": "blocked",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "${loki_uid}" },
+          "expr": "sum(count_over_time({job=\"pfsense\", type=\"firewall\", action=\"pass\"}[$__interval]))",
+          "legendFormat": "passed",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 4 },
+      "id": 5,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "pieType": "donut"
+      },
+      "title": "Répartition block vs pass",
+      "type": "piechart",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${loki_uid}" },
+          "expr": "sum(count_over_time({job=\"pfsense\", type=\"firewall\", action=\"block\"}[24h]))",
+          "legendFormat": "blocked",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "${loki_uid}" },
+          "expr": "sum(count_over_time({job=\"pfsense\", type=\"firewall\", action=\"pass\"}[24h]))",
+          "legendFormat": "passed",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "id": 6,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut"
+      },
+      "title": "Top 10 IP sources bloquées",
+      "type": "piechart",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "topk(10, sum by (src_ip) (count_over_time({job=\"pfsense\", type=\"firewall\", action=\"block\"}[24h])))",
+        "legendFormat": "{{src_ip}}",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "id": 7,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut"
+      },
+      "title": "Top 10 ports destination bloqués",
+      "type": "piechart",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "topk(10, sum by (dst_port) (count_over_time({job=\"pfsense\", type=\"firewall\", action=\"block\"}[24h])))",
+        "legendFormat": "{{dst_port}}",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "id": 8,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "pie"
+      },
+      "title": "Trafic par interface",
+      "type": "piechart",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "sum by (interface) (count_over_time({job=\"pfsense\", type=\"firewall\"}[24h]))",
+        "legendFormat": "{{interface}}",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "displayMode": "color-background" },
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 50 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "id": 9,
+      "options": {
+        "footer": { "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Count" }]
+      },
+      "title": "Top src_ip → dst_ip bloquées",
+      "type": "table",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "topk(20, sum by (src_ip, dst_ip, dst_port) (count_over_time({job=\"pfsense\", type=\"firewall\", action=\"block\"}[24h])))",
+        "legendFormat": "",
+        "refId": "A",
+        "instant": true
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_uid}" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 28 },
+      "id": 10,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "title": "Logs firewall en temps réel",
+      "type": "logs",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${loki_uid}" },
+        "expr": "{job=\"pfsense\", type=\"firewall\"}",
+        "legendFormat": "",
+        "refId": "A"
+      }]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "tags": ["pfsense", "firewall", "security"],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 2,
+        "name": "loki_uid",
+        "query": "loki",
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "pfsense — Firewall Security",
+  "uid": "pfsense-firewall",
+  "version": 1
+}
