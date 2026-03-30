@@ -25,36 +25,51 @@ scrape_configs:
       - labels:
           unit: __journal__systemd_unit__
 
-  # ── Syslog distant (pfsense + VMs) via rsyslog ───────────
-  - job_name: "syslog"
-    syslog:
-      listen_address: 0.0.0.0:1514
-      listen_protocol: tcp
-      idle_timeout: 60s
-      label_structured_data: yes
-      labels:
-        job: "syslog"
-    relabel_configs:
-      - source_labels: [__syslog_message_hostname]
-        target_label: host
-      - source_labels: [__syslog_message_app_name]
-        target_label: application
-      - source_labels: [__syslog_message_severity]
-        target_label: severity
-      - source_labels: [__syslog_message_facility]
-        target_label: facility
+  # ── pfsense firewall (filterlog) ─────────────────────────
+  - job_name: "pfsense-firewall"
+    static_configs:
+      - targets: ["localhost"]
+        labels:
+          job: "pfsense"
+          host: "pfsense"
+          type: "firewall"
+          __path__: /var/log/syslog-remote/pfSense.home.arpa/filterlog.log
     pipeline_stages:
-      # ── filterlog pfsense ─────────────────────────────────
-      - match:
-          selector: '{application="filterlog"}'
-          stages:
-            - regex:
-                expression: '(?P<rule>\d+),[^,]*,[^,]*,[^,]*,(?P<interface>\w+),(?P<reason>\w+),(?P<action>block|pass),(?P<direction>in|out),(?P<ip_ver>\d+)(?:,[^,]*){9},(?P<src_ip>[\d.]+),(?P<dst_ip>[\d.]+),(?P<src_port>\d+),(?P<dst_port>\d+)'
-            - labels:
-                interface:
-                action:
-                direction:
-                src_ip:
-                dst_ip:
-                src_port:
-                dst_port:
+      - regex:
+          expression: '(?P<rule>\d+),[^,]*,[^,]*,[^,]*,(?P<interface>\w+),(?P<reason>\w+),(?P<action>block|pass),(?P<direction>in|out),(?P<ip_ver>\d+)(?:,[^,]*){9},(?P<src_ip>[\d.]+),(?P<dst_ip>[\d.]+),(?P<src_port>\d+),(?P<dst_port>\d+)'
+      - labels:
+          interface:
+          action:
+          direction:
+          src_ip:
+          dst_ip:
+          src_port:
+          dst_port:
+
+  # ── pfsense autres logs ───────────────────────────────────
+  - job_name: "pfsense-system"
+    static_configs:
+      - targets: ["localhost"]
+        labels:
+          job: "pfsense"
+          host: "pfsense"
+          type: "system"
+          __path__: /var/log/syslog-remote/pfSense.home.arpa/*.log
+
+  # ── VM mail ───────────────────────────────────────────────
+  - job_name: "mail"
+    static_configs:
+      - targets: ["localhost"]
+        labels:
+          job: "mail"
+          host: "mail"
+          __path__: /var/log/syslog-remote/mail-01/*.log
+
+  # ── VM DHCP ───────────────────────────────────────────────
+  - job_name: "dhcp"
+    static_configs:
+      - targets: ["localhost"]
+        labels:
+          job: "dhcp"
+          host: "dhcp"
+          __path__: /var/log/syslog-remote/dhcp-01/*.log
