@@ -1,9 +1,0 @@
-# Généré automatiquement par Ansible — ne pas modifier à la main
-# Dernière mise à jour : {{ ansible_date_time.iso8601 }}
-- targets:
-{% for host in groups['si'] %}
-    - "{{ hostvars[host]['ansible_host'] }}:9100"
-{% endfor %}
-  labels:
-    env: "si-principal"
-    provisioned_by: "ansible"
