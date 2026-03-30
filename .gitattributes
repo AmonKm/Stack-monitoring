@@ -1,0 +1,9 @@
+# .gitattributes
+*.yml linguist-language=YAML
+*.yaml linguist-language=YAML
+
+# Si tu veux cacher les scripts shell du comptage
+*.sh linguist-detectable=false
+
+# Ou au contraire marquer certains dossiers comme vendored (ignorés)
+scripts/* linguist-vendored=true
