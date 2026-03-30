@@ -275,3 +275,23 @@
         "refId": "A"
       }]
     }
+ ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "tags": ["dhcp", "mail", "network"],
+  "templating": {
+    "list": [{
+      "current": {},
+      "hide": 2,
+      "name": "loki_uid",
+      "query": "loki",
+      "type": "datasource"
+    }]
+  },
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "DHCP & Mail — Network Services",
+  "uid": "dhcp-mail-v1",
+  "version": 1
+}
