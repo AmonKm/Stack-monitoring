@@ -299,6 +299,8 @@ Stack-monitoring/
 │   │   ├── si.yml                  # IPs et rôles des VMs à superviser
 │   │   └── firewall.yml            # IP du firewall pfsense
 │   └── rules/                      # Règles d'alerting Prometheus (optionnel)
+│   │   ├── alerting.yml            # Surveille et notifie en fonction des règles$
+│   │   └── recording.yml           # Optimise les performances des dashboards Grafana
 ├── loki/
 │   └── loki-config.yml             # Config Loki — stockage filesystem, rétention 30j
 ├── promtail/
