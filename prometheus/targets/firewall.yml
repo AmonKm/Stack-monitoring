@@ -3,4 +3,5 @@
   labels:
     env: "si-principal"
     role: "firewall"
+    hostname: "firewall-01"
     type: "pfsense"
