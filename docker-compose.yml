@@ -15,7 +15,6 @@ services:
       - ./prometheus/targets:/etc/prometheus/targets:ro
       - prometheus_data:/prometheus
     command:
-      - "config.file=/etc/loki/loki-config.yml -config.expand-env=true"
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
       - "--storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-30d}"
@@ -75,7 +74,9 @@ services:
     volumes:
       - ./loki/loki-config.yml:/etc/loki/loki-config.yml:ro
       - loki_data:/loki
-    command: -config.file=/etc/loki/loki-config.yml
+    command:
+      - "-config.file=/etc/loki/loki-config.yml"
+      - "-config.expand-env=true"
     networks:
       - monitoring
     healthcheck:
