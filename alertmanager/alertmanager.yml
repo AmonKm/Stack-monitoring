@@ -18,5 +18,5 @@ route:
 receivers:
   - name: 'discord'
     webhook_configs:
-      - url: 'https://discord.com/api/webhooks/1488516454516003031/IQSOL1sF7ld2LLwd-f5CzE1-Sonh9donJp7S_pELjBRmg-LJ_Jlsre3HLfihs2-Nbj4g/slack'
+      - url: 'http://alertmanager-discord:9094'
         send_resolved: true
