@@ -3,6 +3,7 @@
   labels:
     env: "si-principal"
     role: "dns"
+    hostname: "dns-01"
     provisioned_by: "ansible"
 
 - targets:
@@ -10,6 +11,7 @@
   labels:
     env: "si-principal"
     role: "dhcp"
+    hostname: "dhcp-01"
     provisioned_by: "ansible"
 
 - targets:
@@ -17,6 +19,7 @@
   labels:
     env: "si-principal"
     role: "web"
+    hostname: "web-01"
     provisioned_by: "ansible"
 
 - targets:
@@ -24,4 +27,5 @@
   labels:
     env: "si-principal"
     role: "mail"
+    hostname: "mail-01"
     provisioned_by: "ansible"
