@@ -58,3 +58,24 @@ groups:
         annotations:
           summary: "Firewall pfsense injoignable"
           description: "node_exporter pfsense ne répond plus"
+          
+  - name: cyber
+    interval: 30s
+    rules:
+      - alert: FirewallBlockSpike
+        expr: rate(loki_ingested_samples_total{job="pfsense"}[5m]) > 100
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pic de trafic bloqué sur pfSense"
+          description: "Volume de logs firewall anormalement élevé"
+
+      - alert: SSHBruteForce
+        expr: count_over_time({job="pfsense"} |= "sshguard" |= "block" [5m]) > 20
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Tentatives SSH répétées sur pfSense"
+          description: "Plus de 20 blocages sshguard en 5 minutes"
