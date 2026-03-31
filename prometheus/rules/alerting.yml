@@ -8,8 +8,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "Machine {{ $labels.instance }} injoignable"
-          description: "{{ $labels.job }} sur {{ $labels.instance }} ne répond plus"
+          summary: "Machine {{ $labels.hostname }} injoignable"
+          description: "{{ $labels.job }} sur {{ $labels.hostname }} ne répond plus"
 
       - alert: HighCPU
         expr: instance:cpu_usage:rate5m > 85
@@ -17,7 +17,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "CPU élevé sur {{ $labels.instance }}"
+          summary: "CPU élevé sur {{ $labels.hostname }}"
           description: "CPU à {{ $value | printf \"%.1f\" }}%"
 
       - alert: HighMemory
@@ -26,7 +26,7 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "RAM critique sur {{ $labels.instance }}"
+          summary: "RAM critique sur {{ $labels.hostname }}"
           description: "Mémoire disponible : {{ $value | printf \"%.1f\" }}%"
 
       - alert: DiskAlmostFull
@@ -35,7 +35,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Disque presque plein sur {{ $labels.instance }}"
+          summary: "Disque presque plein sur {{ $labels.hostname }}"
           description: "Espace restant : {{ $value | printf \"%.1f\" }}%"
 
   - name: firewall
