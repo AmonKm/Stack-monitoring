@@ -22,5 +22,5 @@ receivers:
     webhook_configs:
       - url: 'https://discord.com/api/webhooks/1488516454516003031/IQSOL1sF7ld2LLwd-f5CzE1-Sonh9donJp7S_pELjBRmg-LJ_Jlsre3HLfihs2-Nbj4g'
         send_resolved: true
-
-templates: []
+        http_config: {}
+        max_alerts: 5
