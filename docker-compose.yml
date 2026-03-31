@@ -142,3 +142,4 @@ volumes:
   loki_data:
   grafana_data:
   promtail_positions:
+  minio_data:
