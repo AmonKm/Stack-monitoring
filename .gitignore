@@ -1,5 +1,7 @@
 # Secrets
 .env
+# .gitignore
+alertmanager/alertmanager.yml
 
 # Vagrant
 .vagrant/
