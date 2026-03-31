@@ -19,3 +19,9 @@ scrape_configs:
       - files:
           - /etc/prometheus/targets/*.yml
         refresh_interval: 30s
+
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
