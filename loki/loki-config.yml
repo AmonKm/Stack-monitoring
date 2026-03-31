@@ -28,10 +28,19 @@ storage_config:
   tsdb_shipper:
     active_index_directory: /loki/index
     cache_location: /loki/cache
-  aws:                        # remplace le bloc filesystem
-    s3: http://${MINIO_ROOT_USER}:${MINIO_ROOT_PASSWORD}@minio:9000/loki
+  aws:
+    s3: http://minio:9000/loki
     s3forcepathstyle: true
     region: us-east-1
+    access_key_id: ${MINIO_ROOT_USER}
+    secret_access_key: ${MINIO_ROOT_PASSWORD}
+
+limits_config:
+  retention_period: 720h
+  ingestion_rate_mb: 16
+  ingestion_burst_size_mb: 32
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
 
 compactor:
   working_directory: /loki/compactor
