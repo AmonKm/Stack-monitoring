@@ -267,7 +267,7 @@
         "sortOrder": "Descending",
         "wrapLogMessage": false
       },
-      "title": "📧 Logs Mail en temps réel",
+      "title": "Logs Mail en temps réel",
       "type": "logs",
       "targets": [{
         "datasource": { "type": "loki", "uid": "${loki_uid}" },
