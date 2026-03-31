@@ -21,40 +21,52 @@ génère tous les fichiers de configuration et lance Docker Compose.
 > Pour une configuration manuelle détaillée, consulter la section [Installation rapide](#installation-rapide) ci-dessous.
 ---
 ## Architecture
-
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Infrastructure cible                      │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
-│  │ pfsense  │  │   Mail   │  │   DNS    │  │   Web    │       │
-│  │ syslog   │  │ syslog   │  │ syslog   │  │ syslog   │       │
-│  │ node_exp │  │ node_exp │  │ node_exp │  │ node_exp │       │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
-└───────┼─────────────┼─────────────┼──────────────┼─────────────┘
-        │        syslog UDP 514                     │  scrape :9100
-        └──────────────┬────────────────────────────┘
-                       │                  │
-            ┌──────────▼──────┐    ┌──────▼─────────┐
-            │    rsyslog      │    │   Prometheus   │
-            │   UDP :514      │    │   métriques    │
-            └──────┬──────────┘    └──────┬─────────┘
-                   │                      │
-            ┌──────▼──────┐               │
-            │   Promtail  │               │
-            │   lit logs  │               │
-            └──────┬──────┘               │
-                   │ push logs            │
-            ┌──────▼──────┐               │
-            │    Loki     │               │ datasource
-            │ stocke logs │               │
-            └──────┬──────┘               │
-                   │                      │
-            ┌──────▼──────────────────────▼──────┐
-            │              Grafana               │
-            │          dashboards :3000          │
-            └────────────────────────────────────┘
-```
+Infrastructure cible (groupe 6.1)
+──────────────────────────────────────────────────────────────────
+ pfSense     Mail      DHCP      DNS       Web      monitoring
+    │           │         │        │         │           │
+    │     syslog UDP :1514 (tous les hosts)  │           │ journald
+    └───────────┴─────────┴────────┴─────────┘           │
+                          │                               │
+    ┌─────────────────────┼───────────────────────────────┘
+    │  node_exporter :9100 (tous les hosts)
+    └──────────────────────────────────────────────────────
+──────────────────────────────────────────────────────────────────
+VM monitoring (groupe 6.2)
 
+  [LOGS]                              [MÉTRIQUES]
+
+  rsyslog :1514                       Prometheus
+  (reçoit syslog UDP)                 (scrape :9100)
+       │                                    │
+       │ écrit par host                     │ stocke TSDB
+       ▼                                    │
+  /var/log/syslog-remote/                   │
+    ├── pfSense.home.arpa/                  │
+    ├── mail-01/                            │
+    ├── dhcp-01/                            │
+    ├── dns-01/                             │
+    └── web-01/                             │
+       │                                    │
+       │ lit (tail -f)                      │
+       ▼                                    │
+    Promtail                                │
+       │                                    │
+       │ push HTTP :3100                    │
+       ▼                                    │
+      Loki                                  │
+       │                                    │
+       │ stocke (S3)                        │
+       ▼                                    │
+     MinIO                                  │
+                                            │
+──────────────────────────────────────────────────────────────────
+              Grafana :3000
+         ┌────────┴────────┐
+        Loki           Prometheus
+     (LogQL)           (PromQL)
+```
 ## Composants
 
 | Composant | Rôle | Port |
