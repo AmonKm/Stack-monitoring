@@ -39,9 +39,3 @@ compactor:
   retention_delete_delay: 2h
   compaction_interval: 10m
   delete_request_store: s3    # filesystem → s3
-compactor:
-  working_directory: /loki/compactor
-  retention_enabled: true
-  retention_delete_delay: 2h
-  compaction_interval: 10m
-  delete_request_store: filesystem
