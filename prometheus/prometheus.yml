@@ -1,27 +1,23 @@
 global:
-  scrape_interval: 30s
-  evaluation_interval: 30s
+  scrape_interval: 30s      # Fréquence de collecte des métriques sur toutes les cibles
+  evaluation_interval: 30s  # Fréquence d'évaluation des règles d'alerte et recording rules
 
 rule_files:
-  - /etc/prometheus/rules/*.yml
+  - /etc/prometheus/rules/*.yml   # Charge tous les fichiers de règles dans ce dossier (alerting + recording)
 
 scrape_configs:
 
+  # ── VM Monitoring (cette machine) ────────────────────────
   - job_name: "monitoring"
     static_configs:
-      - targets: ["10.0.0.13:9100"]
+      - targets: ["10.0.0.13:9100"]   # node_exporter de la VM monitoring elle-même
         labels:
-          role: "monitoring"
-          env: "si-principal"
+          role: "monitoring"          # Label métier pour filtrer dans Grafana
+          env: "si-principal"         # Label d'environnement (cohérent avec les autres VMs)
 
+  # ── Autres VMs (découverte via fichiers) ─────────────────
   - job_name: "node"
     file_sd_configs:
       - files:
-          - /etc/prometheus/targets/*.yml
-        refresh_interval: 30s
-
-
-alerting:
-  alertmanagers:
-    - static_configs:
-        - targets: ['alertmanager:9093']
+          - /etc/prometheus/targets/*.yml   # Lit les cibles depuis des fichiers YAML (file_sd)
+        refresh_interval: 30s              # Relit les fichiers toutes les 30s (hot-reload des cibles)
