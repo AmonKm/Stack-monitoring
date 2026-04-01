@@ -1,5 +1,8 @@
 ![Stack](https://img.shields.io/badge/stack-Prometheus%20%7C%20Loki%20%7C%20Grafana-orange)
 ![Docker](https://img.shields.io/badge/docker-compose-blue)
+![Prometheus](https://img.shields.io/badge/Prometheus-v3.5.0-red)
+![Loki](https://img.shields.io/badge/Loki-3.4.3-f5a623)
+![Grafana](https://img.shields.io/badge/Grafana-12.0.1-F46800)
 # Stack Monitoring — Groupe 6.2
 
 Stack de supervision Prometheus + Loki + Grafana déployable sur n'importe quelle infrastructure Linux.
@@ -67,7 +70,8 @@ VM monitoring (groupe 6.2)
         Loki           Prometheus
      (LogQL)           (PromQL)
 ```
-
+**Stockage** : les chunks de logs Loki sont persistés dans MinIO (compatible S3, bucket `loki`).
+Les métriques Prometheus sont stockées en TSDB local sur la VM monitoring.
 ## Composants
 
 | Composant | Rôle | Port |
@@ -76,8 +80,8 @@ VM monitoring (groupe 6.2)
 | **Loki** | Stockage et indexation des logs | 3100 (local) |
 | **Promtail** | Lit les fichiers de logs → pousse vers Loki | interne |
 | **Grafana** | Dashboards et alertes | 3000 |
-| **rsyslog** | Reçoit logs syslog UDP :514 → écrit sur disque | 1514 |
-| **MinIO** | Stockage objet S3 — backend persistant pour Loki | 9001 (UI) |
+| **rsyslog** | Reçoit logs syslog UDP :514 → écrit sur disque | 514 |
+| **MinIO** | Stockage objet S3 — backend persistant pour Loki | 9001 (UI), 9002 (API) |
 
 ## Versions testées
 
@@ -88,10 +92,10 @@ VM monitoring (groupe 6.2)
 | OS | Debian 12 (bookworm) |
 | Docker | 29.3.1 |
 | Docker Compose | v5.1.1 |
-| Grafana | 11.1.0 |
-| Prometheus | v2.53.0 |
-| Loki | 3.1.0 |
-| Promtail | 3.1.0 |
+| Grafana | **12.0.1** |
+| Prometheus | **v3.5.0** |
+| Loki | **3.4.3** |
+| Promtail | **3.4.3** |
 | MinIO | latest |
 
 ### Infrastructure cible (groupe 6.1)
@@ -242,9 +246,9 @@ Dans l'interface web pfSense : **Status → System Logs → Settings**
 
 | Paramètre | Valeur |
 |-----------|--------|
-| Enable Remote Logging | ✅ coché |
+| Enable Remote Logging | coché |
 | Remote log servers | `<IP_VM_MONITORING>:514` |
-| Remote Syslog Contents | ✅ Firewall Events + System Events |
+| Remote Syslog Contents | Firewall Events + System Events |
 | Log message format | syslog (RFC 5424) |
 
 > **Important** : pour que les logs firewall (filterlog) apparaissent, au moins une règle firewall doit avoir l'option **Log** activée dans Firewall → Rules.
@@ -307,8 +311,10 @@ Les dashboards sont chargés automatiquement au démarrage de Grafana depuis `gr
 
 ```
 Stack-monitoring/
-├── docker-compose.yml              # Stack principal — Prometheus, Loki, Promtail, Grafana, MinIO
 ├── setup.sh                        # Script interactif de configuration automatique
+├── docker-compose.yml              # Stack principal — Prometheus, Loki, Promtail, Grafana, MinIO
+├── README.md
+├── .gitignore    
 ├── .env.example                    # Variables d'environnement → copier en .env
 ├── prometheus/
 │   ├── prometheus.yml              # Config Prometheus (scrape interval, règles)
@@ -349,6 +355,31 @@ Stack-monitoring/
 | `DiskAlmostFull` | Disque < 15% pendant 10min | warning |
 | `HighCPU_Firewall` | CPU pfSense > 80% pendant 5min | warning |
 | `FirewallDown` | pfSense injoignable > 1min | critical |
+
+## Sécurité
+
+### Exposition réseau
+
+Tous les services internes sont liés à `127.0.0.1` — seul Grafana est accessible depuis le réseau :
+
+| Service | Exposition |
+|---------|-----------|
+| Grafana | `0.0.0.0:3000` — accessible depuis le réseau |
+| Prometheus | `127.0.0.1:9090` — local uniquement |
+| Loki | `127.0.0.1:3100` — local uniquement |
+| MinIO UI | `127.0.0.1:9001` — local uniquement |
+| MinIO API | `127.0.0.1:9002` — local uniquement |
+
+### Secrets
+
+Les secrets sont gérés via un fichier `.env` non versionné (listé dans `.gitignore`).
+Le repo contient uniquement `.env.example` avec des valeurs vides — aucun secret n'est jamais commité.
+```bash
+# Vérifier que .env n'est pas suivi par git
+git status --short | grep .env
+```
+
+> Changer impérativement `GF_ADMIN_PASSWORD` et `MINIO_ROOT_PASSWORD` avant tout déploiement.
 
 ## Dépannage
 
