@@ -1,8 +1,8 @@
 # Désactive l'authentification multi-tenant (mode single-tenant, adapté à un labo)
 auth_enabled: false
 
-# Lance tous les composants Loki dans un seul processus (ingester, querier, compactor...)
-# Pratique en monorepo/labo, évite de tout éclater en microservices
+# Lance tous les composants Loki dans un seul processus
+# évite de tout éclater en microservices
 target: all
 
 server:
