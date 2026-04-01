@@ -1,10 +1,6 @@
 # Secrets
 .env
 
-
-# Vagrant
-.vagrant/
-
 # Données runtime Docker
 prometheus_data/
 loki_data/
