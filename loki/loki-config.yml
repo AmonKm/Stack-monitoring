@@ -1,54 +1,57 @@
+# Désactive l'authentification multi-tenant (mode single-tenant, adapté à un labo)
 auth_enabled: false
 
+# Lance tous les composants Loki dans un seul processus (ingester, querier, compactor...)
+# Pratique en monorepo/labo, évite de tout éclater en microservices
 target: all
 
 server:
-  http_listen_port: 3100
-  log_level: warn
+  http_listen_port: 3100      # Port d'écoute de l'API Loki (utilisé par Promtail et Grafana)
+  log_level: warn             # Niveau de log : warn = silencieux sauf problème (évite le spam)
 
 common:
-  path_prefix: /loki
-  replication_factor: 1
+  path_prefix: /loki          # Répertoire racine pour tous les fichiers internes de Loki
+  replication_factor: 1       # Pas de réplication (1 seule instance)
   ring:
-    instance_addr: 127.0.0.1
+    instance_addr: 127.0.0.1  # Adresse que ce nœud annonce aux autres (loopback = solo)
     kvstore:
-      store: inmemory
+      store: inmemory          # Stockage du ring en mémoire (pas de Consul/etcd nécessaire en solo)
 
 schema_config:
   configs:
-    - from: 2024-01-01
-      store: tsdb
-      object_store: s3        # filesystem → s3
-      schema: v13
+    - from: 2024-01-01         # Date à partir de laquelle ce schéma s'applique
+      store: tsdb              # Moteur d'index : TSDB (plus performant que boltdb-shipper...)
+      object_store: s3         # Stockage des chunks : S3 (ici MinIO, voir storage_config)
+      schema: v13              # Version du schéma Loki
       index:
-        prefix: index_
-        period: 24h
+        prefix: index_         # Préfixe des fichiers d'index dans le bucket
+        period: 24h            # Un fichier d'index par jour
 
 storage_config:
   tsdb_shipper:
-    active_index_directory: /loki/index
-    cache_location: /loki/cache
-    
+    active_index_directory: /loki/index    # Index actif (en cours d'écriture) sur disque local
+    cache_location: /loki/cache            # Cache local des index récents pour accélérer les requêtes
+
   aws:
-    s3: http://minio:9000
-    bucketnames: loki
-    s3forcepathstyle: true
-    region: us-east-1
-    access_key_id: ${S3_ACCESS_KEY_ID}
-    secret_access_key: ${S3_SECRET_ACCESS_KEY}
-    insecure: true
-    endpoint: minio:9000
+    s3: http://minio:9000                  # URL du service MinIO (compatible S3, tourne en Docker)
+    bucketnames: loki                      # Nom du bucket S3/MinIO où stocker les chunks de logs
+    s3forcepathstyle: true                 # Obligatoire avec MinIO (pas de virtual-hosted style)
+    region: us-east-1                      # Région fictive (MinIO l'ignore, mais le champ est requis)
+    access_key_id: ${S3_ACCESS_KEY_ID}     # Clé d'accès injectée via variable d'environnement
+    secret_access_key: ${S3_SECRET_ACCESS_KEY}  # Secret injecté via variable d'env (ne pas hardcoder !)
+    insecure: true                         # Désactive TLS (HTTP entre containers Docker, pas de cert nécessaire)
+    endpoint: minio:9000                   # Endpoint MinIO (nom du service Docker Compose)
 
 limits_config:
-  retention_period: 720h
-  ingestion_rate_mb: 16
-  ingestion_burst_size_mb: 32
-  reject_old_samples: true
-  reject_old_samples_max_age: 720h
+  retention_period: 720h          # Durée de rétention des logs : 30 jours (720h)
+  ingestion_rate_mb: 16           # Débit max d'ingestion par tenant : 16 Mo/s
+  ingestion_burst_size_mb: 32     # Burst autorisé : 32 Mo (pic court au-delà du débit nominal)
+  reject_old_samples: true        # Refuse les logs trop anciens (évite les injections hors-fenêtre)
+  reject_old_samples_max_age: 720h  # Âge max accepté pour un log entrant : 30 jours
 
 compactor:
-  working_directory: /loki/compactor
-  retention_enabled: true
-  retention_delete_delay: 2h
-  compaction_interval: 10m
-  delete_request_store: s3    # filesystem → s3
+  working_directory: /loki/compactor    # Répertoire de travail temporaire du compacteur
+  retention_enabled: true              # Active la suppression automatique des logs expirés
+  retention_delete_delay: 2h           # Délai avant suppression effective après expiration
+  compaction_interval: 10m             # Fréquence de compaction des index (toutes les 10 min)
+  delete_request_store: s3             # Stocke les requêtes de suppression dans MinIO/S3
