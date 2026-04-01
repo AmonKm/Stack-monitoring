@@ -1,31 +1,31 @@
 server:
-  http_listen_port: 9080
-  log_level: warn
+  http_listen_port: 9080   # Port HTTP de Promtail (métriques Prometheus + API interne)
+  log_level: warn           # Logs silencieux sauf erreur
 
 positions:
-  filename: /tmp/positions.yaml
+  filename: /tmp/positions.yaml   # Fichier de suivi : mémorise où Promtail en est dans chaque fichier de log
 
 clients:
-  - url: http://loki:3100/loki/api/v1/push
+  - url: http://loki:3100/loki/api/v1/push   # Endpoint Loki où pousser les logs
     backoff_config:
-      min_period: 500ms
-      max_period: 5m
-      max_retries: 10
+      min_period: 500ms    # Délai min avant retry en cas d'échec
+      max_period: 5m       # Délai max (exponentiel entre les deux)
+      max_retries: 10      # Nombre max de tentatives avant abandon
 
 scrape_configs:
 
-  # ── Journald (VM monitoring) ──────────────────────────────
+  # ── Journald (VM monitoring elle-même) ───────────────────
   - job_name: "journald"
     journal:
-      max_age: 12h
+      max_age: 12h         # Ne récupère que les logs des 12 dernières heures au démarrage
       labels:
         job: "journald"
         host: "monitoring"
     pipeline_stages:
       - labels:
-          unit: __journal__systemd_unit__
+          unit: __journal__systemd_unit__   # Extrait le nom de l'unit systemd comme label (ex: sshd.service)
 
-  # ── pfsense firewall (filterlog) ─────────────────────────
+  # ── pfSense firewall (filterlog) ─────────────────────────
   - job_name: "pfsense-firewall"
     static_configs:
       - targets: ["localhost"]
@@ -33,20 +33,22 @@ scrape_configs:
           job: "pfsense"
           host: "pfsense"
           type: "firewall"
-          __path__: /var/log/syslog-remote/pfSense.home.arpa/filterlog.log
+          __path__: /var/log/syslog-remote/pfSense.home.arpa/filterlog.log   # Fichier écrit par rsyslog
     pipeline_stages:
       - regex:
+          # Parse le format CSV de filterlog pfSense :
+          # rule, (skip×3), interface, reason, action, direction, ip_ver, (skip×9), src_ip, dst_ip, src_port, dst_port
           expression: '(?P<rule>\d+),[^,]*,[^,]*,[^,]*,(?P<interface>\w+),(?P<reason>\w+),(?P<action>block|pass),(?P<direction>in|out),(?P<ip_ver>\d+)(?:,[^,]*){9},(?P<src_ip>[\d.]+),(?P<dst_ip>[\d.]+),(?P<src_port>\d+),(?P<dst_port>\d+)'
       - labels:
-          interface:
-          action:
-          direction:
-          src_ip:
-          dst_ip:
-          src_port:
-          dst_port:
+          interface:    # Interface réseau (ex: igb0, igb1)
+          action:       # Action firewall : block ou pass
+          direction:    # Sens du paquet : in ou out
+          src_ip:       # IP source
+          dst_ip:       # IP destination
+          src_port:     # Port source
+          dst_port:     # Port destination
 
-  # ── pfsense autres logs ───────────────────────────────────
+  # ── pfSense autres logs (syslogd, dhcpd...) ──────────────
   - job_name: "pfsense-system"
     static_configs:
       - targets: ["localhost"]
@@ -54,7 +56,7 @@ scrape_configs:
           job: "pfsense"
           host: "pfsense"
           type: "system"
-          __path__: /var/log/syslog-remote/pfSense.home.arpa/*.log
+          __path__: /var/log/syslog-remote/pfSense.home.arpa/*.log   # Tous les logs pfSense sauf filterlog
 
   # ── VM mail ───────────────────────────────────────────────
   - job_name: "mail"
@@ -75,11 +77,12 @@ scrape_configs:
           __path__: /var/log/syslog-remote/dhcp-01/*.log
     pipeline_stages:
       - regex:
+          # Extrait le type de message DHCP, l'IP assignée, le MAC et le hostname du client
           expression: '(?P<type>DHCPREQUEST|DHCPACK|DHCPOFFER|DHCPDISCOVER|DHCPNAK|DHCPRELEASE) (?:for|on) (?P<ip>[\d.]+) (?:from|to) (?P<mac>[0-9a-f:]+)(?: \((?P<hostname>[^)]+)\))?'
       - labels:
-          type:
-          ip:
-          hostname:
+          type:       # Type de message DHCP (DISCOVER, OFFER, REQUEST, ACK...)
+          ip:         # IP assignée ou demandée
+          hostname:   # Nom de la machine cliente (si fourni)
 
   # ── VM web ────────────────────────────────────────────────
   - job_name: "web"
@@ -100,7 +103,8 @@ scrape_configs:
           __path__: /var/log/syslog-remote/dns-01/*.log
     pipeline_stages:
       - regex:
+          # Extrait le domaine résolu et le type d'enregistrement (A, AAAA, MX...)
           expression: "resolving '(?P<domain>[^/]+)/(?P<record_type>[^/]+)"
       - labels:
-          domain:
-          record_type:
+          domain:       # Domaine demandé (ex: example.com)
+          record_type:  # Type DNS (A, AAAA, MX, CNAME...)
