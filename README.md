@@ -436,7 +436,7 @@ sudo journalctl -u rsyslog --since "5 minutes ago"
 
 ---
 
-## Schéma Docker
+## Schéma Docker (Promtail n'expose plus 1514) :)
 ![description](docs/images/schema-docker.drawio.png)
 ## Schéma simplifié
 ![description](docs/images/schema-simple.jpg)
