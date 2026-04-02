@@ -39,7 +39,7 @@ VM monitoring (groupe 6.2)
 
   [LOGS]                              [MÉTRIQUES]
 
-  rsyslog :1514                       Prometheus
+  rsyslog :514                       Prometheus
   (reçoit syslog UDP)                 (scrape :9100)
        │                                    │
        │ écrit par host                     │ stocke TSDB
