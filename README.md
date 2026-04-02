@@ -356,6 +356,11 @@ Stack-monitoring/
 │   └── tasks/
 │       └── monitoring-client.yml   # Installe node_exporter + rsyslog sur une VM
 └── docs/
+│   └── images/
+│       └── schema-docker.drawio.png
+│       └── schema-loki.jpg
+│       └── schema-prometheus.jpg
+│       └── schema-simple.jpg
     └── rsyslog.conf                # Config rsyslog à copier sur la VM monitoring
 ```
 
