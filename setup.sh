@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================================
 # Stack Monitoring — Script de configuration interactif
-# Ce script configure automatiquement le stack selon votre infrastructure
+# Ce script configure automatiquement le stack selon votre infrastructure | Pas à jour ...
 # =============================================================================
  
 set -e
