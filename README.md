@@ -17,7 +17,7 @@ chmod +x setup.sh
 sudo ./setup.sh
 ```
 
-Le script configure automatiquement l'ensemble du stack en mode interactif : il demande les IPs de vos VMs, le mot de passe Grafana, le hostname pfsense, génère tous les fichiers de configuration et lance Docker Compose.
+Le script configure automatiquement l'ensemble du stack en mode interactif : il demande les IPs de vos VMs, le mot de passe Grafana, le hostname pfsense, génère tous les fichiers de configuration et lance Docker Compose.  Il n'est pas dans sa version finale, par manque de temps il n'est pas considéré comme fiable pour le moment.
 
 > Pour une configuration manuelle détaillée, consulter la section *Installation rapide* ci-dessous.
 
