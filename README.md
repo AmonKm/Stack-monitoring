@@ -436,6 +436,15 @@ sudo journalctl -u rsyslog --since "5 minutes ago"
 
 ---
 
+## Schéma Docker
+![description](docs/images/schema-docker.drawio.png)
+## Schéma simplifié
+![description](docs/images/schema-simple.jpg)
+## Schéma Loki
+![description](docs/images/schema-loki.jpg)
+## Schéma Prometheus
+![description](docs/images/schema-prometheus.jpg)
+
 Groupe 6.2 — Projet supervision infrastructure
 Stack compatible avec toute infrastructure Linux disposant de node_exporter et rsyslog.
 
