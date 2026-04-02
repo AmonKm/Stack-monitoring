@@ -237,6 +237,20 @@ sudo journalctl -u rsyslog --since "1 minute ago" | tail -5
 docker compose up -d
 docker compose ps
 ```
+**Loki erreur `NoSuchBucket` au démarrage**
+
+Se produit quand Loki démarre avant que le bucket MinIO soit créé (première installation ou volumes recréés).
+```bash
+# Vérifier l'erreur
+docker logs loki --tail=10 | grep NoSuchBucket
+
+# Fix : forcer la recréation du bucket puis relancer
+docker compose up -d minio
+docker compose run --rm minio-init
+docker compose up -d
+```
+
+> Ce problème ne se produit qu'à la première installation ou après une suppression des volumes Docker (`docker volume rm`).
 
 Accéder à Grafana : `http://<IP_VM_MONITORING>:3000`
 
