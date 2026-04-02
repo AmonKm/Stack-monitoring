@@ -1,6 +1,6 @@
 server:
   http_listen_port: 9080   # Port HTTP de Promtail (métriques Prometheus + API interne)
-  log_level: warn           # Logs silencieux sauf erreur
+  log_level: warn          
 
 positions:
   filename: /tmp/positions.yaml   # Fichier de suivi : mémorise où Promtail en est dans chaque fichier de log
@@ -33,7 +33,7 @@ scrape_configs:
           job: "pfsense"
           host: "pfsense"
           type: "firewall"
-          __path__: /var/log/syslog-remote/pfSense.home.arpa/filterlog.log   # Fichier écrit par rsyslog
+          __path__: /var/log/syslog-remote/pfSense.home.arpa/filterlog.log   # Fichier écrit par rsyslog #a modifier si l'hostname n'est pas le même
     pipeline_stages:
       - regex:
           # Parse le format CSV de filterlog pfSense :
