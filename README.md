@@ -230,6 +230,8 @@ sudo journalctl -u rsyslog --since "1 minute ago" | tail -5
 docker compose up -d
 docker compose ps
 ```
+> [!CAUTION]
+> Si Loki ne démarre pas correctement, veuillez vous fier aux instructions ci-dessous. C'est un comportement prévu qui sera corrigé dans la prochaine release.
 **Loki erreur `NoSuchBucket` au démarrage**
 
 Se produit quand Loki démarre avant que le bucket MinIO soit créé (première installation ou volumes recréés).
