@@ -8,19 +8,6 @@
 Stack de supervision Prometheus + Loki + Grafana déployable sur n'importe quelle infrastructure Linux.
 Un git clone + 3 commandes suffisent pour avoir un monitoring complet opérationnel.
 
-## Démarrage rapide
-
-```bash
-git clone https://github.com/AmonKm/Stack-monitoring.git
-cd Stack-monitoring
-chmod +x setup.sh
-sudo ./setup.sh
-```
-
-Le script configure automatiquement l'ensemble du stack en mode interactif : il demande les IPs de vos VMs, le mot de passe Grafana, le hostname pfsense, génère tous les fichiers de configuration et lance Docker Compose.  Il n'est pas dans sa version finale, par manque de temps il n'est pas considéré comme fiable pour le moment.
-
-> Pour une configuration manuelle détaillée, consulter la section *Installation rapide* ci-dessous.
-
 ## Architecture
 
 ```
@@ -133,6 +120,12 @@ Les métriques Prometheus sont stockées en TSDB local sur la VM monitoring.
 ```bash
 git clone https://github.com/AmonKm/Stack-monitoring.git
 cd Stack-monitoring
+```
+
+Il existe un script qui configure automatiquement l'ensemble du stack en mode interactif : il demande les IPs de vos VMs, le mot de passe Grafana, le hostname pfsense, génère tous les fichiers de configuration et lance Docker Compose.  Il n'est pas dans sa version finale, par manque de temps il n'est pas considéré comme fiable pour le moment.
+```
+chmod +x setup.sh # Si vous voulez utiliser le script
+sudo ./setup.sh # Execution
 ```
 
 ### 2. Configurer les variables
