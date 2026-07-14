@@ -1,9 +1,10 @@
 ![Stack](https://img.shields.io/badge/stack-Prometheus%20%7C%20Loki%20%7C%20Grafana-orange)
 ![Docker](https://img.shields.io/badge/docker-compose-blue)
-![Prometheus](https://img.shields.io/badge/Prometheus-v3.5.0-red)
-![Loki](https://img.shields.io/badge/Loki-3.4.3-f5a623)
-![Grafana](https://img.shields.io/badge/Grafana-12.0.1-F46800)
-# Stack Monitoring — Groupe 6.2
+![Prometheus](https://img.shields.io/badge/Prometheus-v3.13.1-red)
+![Loki](https://img.shields.io/badge/Loki-3.7.3-f5a623)
+![Promtail](https://img.shields.io/badge/Promtail-3.6.11-f5a623)
+![Grafana](https://img.shields.io/badge/Grafana-13.1.0-F46800)
+# Stack Monitoring
 
 Stack de supervision Prometheus + Loki + Grafana déployable sur n'importe quelle infrastructure Linux.
 Un git clone + 3 commandes suffisent pour avoir un monitoring complet opérationnel.
